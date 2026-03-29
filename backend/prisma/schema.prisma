@@ -1,0 +1,700 @@
+// =============================================================================
+// Smart Fashion AI — Prisma Schema
+// Database: PostgreSQL 16 + pgvector
+// Tổng: 27+ bảng | ORM: Prisma 6.x
+// =============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector"), uuidOssp(map: "uuid-ossp"), pgTrgm(map: "pg_trgm")]
+}
+
+// =============================================================================
+// ENUMS — Tất cả enum nghiệp vụ
+// =============================================================================
+
+enum UserRole {
+  member
+  admin
+  super_admin
+}
+
+enum VipTier {
+  none
+  silver
+  gold
+  diamond
+}
+
+enum OrderStatus {
+  pending
+  confirmed
+  preparing
+  shipping
+  delivered
+  completed
+  cancelled
+}
+
+enum CancelledBy {
+  user
+  admin
+}
+
+enum PaymentMethod {
+  cod
+  vcb_qr
+  bank_transfer
+}
+
+enum PaymentStatus {
+  pending
+  success
+  failed
+  refunded
+}
+
+enum VoucherType {
+  percent
+  fixed_amount
+  free_ship
+}
+
+enum BannerPosition {
+  hero
+  sub_banner
+  popup
+}
+
+enum NotificationType {
+  order_update
+  voucher_new
+  wishlist_sale
+  stock_back
+  vip_upgrade
+  system
+}
+
+enum NotificationChannel {
+  in_app
+  email
+  push
+}
+
+enum ChatRole {
+  user
+  assistant
+}
+
+enum ReturnType {
+  return_item
+  exchange
+}
+
+enum ReturnStatus {
+  pending
+  approved
+  rejected
+  completed
+}
+
+enum AdminModule {
+  products
+  orders
+  users
+  vouchers
+  content
+  analytics
+}
+
+// =============================================================================
+// 1. USERS & AUTH
+// =============================================================================
+
+model User {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String   @unique @db.VarChar(255)
+  passwordHash  String?  @map("password_hash") @db.VarChar(255)
+  fullName      String   @map("full_name") @db.VarChar(100)
+  phone         String?  @db.VarChar(15)
+  avatarUrl     String?  @map("avatar_url") @db.VarChar(500)
+  role          UserRole @default(member)
+  vipTier       VipTier  @default(none) @map("vip_tier")
+  totalSpent    Decimal  @default(0) @map("total_spent") @db.Decimal(15, 2)
+  googleId      String?  @map("google_id") @db.VarChar(100)
+  isActive      Boolean  @default(true) @map("is_active")
+  emailVerified Boolean  @default(false) @map("email_verified")
+  locale        String   @default("vi") @db.VarChar(5)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Quan hệ
+  addresses          UserAddress[]
+  carts              Cart[]
+  orders             Order[]
+  reviews            Review[]
+  wishlists          Wishlist[]
+  notifications      Notification[]
+  blogs              Blog[]              @relation("BlogAuthor")
+  chatSessions       ChatSession[]
+  behaviorEvents     BehaviorEvent[]
+  vouchersCreated    Voucher[]           @relation("VoucherCreator")
+  userVouchers       UserVoucher[]
+  returnRequests     ReturnRequest[]     @relation("ReturnUser")
+  processedReturns   ReturnRequest[]     @relation("ReturnProcessor")
+  statusChanges      OrderStatusHistory[] @relation("StatusChanger")
+  adminPermissions   AdminPermission[]    @relation("AdminPerms")
+  grantedPermissions AdminPermission[]    @relation("GrantedPerms")
+  settingsUpdated    AdminSetting[]
+
+  @@map("users")
+}
+
+model UserAddress {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  fullName      String   @map("full_name") @db.VarChar(100)
+  phone         String   @db.VarChar(15)
+  province      String   @db.VarChar(100)
+  district      String   @db.VarChar(100)
+  ward          String   @db.VarChar(100)
+  addressDetail String   @map("address_detail") @db.VarChar(255)
+  isDefault     Boolean  @default(false) @map("is_default")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_addresses")
+}
+
+model AdminPermission {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adminId   String      @map("admin_id") @db.Uuid
+  module    AdminModule
+  grantedBy String      @map("granted_by") @db.Uuid
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  admin   User @relation("AdminPerms", fields: [adminId], references: [id], onDelete: Cascade)
+  granter User @relation("GrantedPerms", fields: [grantedBy], references: [id])
+
+  @@unique([adminId, module])
+  @@map("admin_permissions")
+}
+
+// =============================================================================
+// 2. PRODUCTS & CATEGORIES
+// =============================================================================
+
+model Category {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String     @db.VarChar(100)
+  nameEn    String?    @map("name_en") @db.VarChar(100)
+  slug      String     @unique @db.VarChar(100)
+  parentId  String?    @map("parent_id") @db.Uuid
+  imageUrl  String?    @map("image_url") @db.VarChar(500)
+  sortOrder Int        @default(0) @map("sort_order")
+  isActive  Boolean    @default(true) @map("is_active")
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  // Tự tham chiếu — cây danh mục
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String   @db.VarChar(255)
+  nameEn        String?  @map("name_en") @db.VarChar(255)
+  slug          String   @unique @db.VarChar(255)
+  description   String?  @db.Text
+  descriptionEn String?  @map("description_en") @db.Text
+  price         Decimal  @db.Decimal(15, 2)
+  salePrice     Decimal? @map("sale_price") @db.Decimal(15, 2)
+  categoryId    String   @map("category_id") @db.Uuid
+  material      String?  @db.VarChar(100)
+  brand         String?  @db.VarChar(100)
+  sizeChart     Json?    @map("size_chart") @db.JsonB
+  isActive      Boolean  @default(true) @map("is_active")
+  isFeatured    Boolean  @default(false) @map("is_featured")
+  viewCount     Int      @default(0) @map("view_count")
+  soldCount     Int      @default(0) @map("sold_count")
+  avgRating     Decimal  @default(0) @map("avg_rating") @db.Decimal(2, 1)
+  reviewCount   Int      @default(0) @map("review_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Quan hệ
+  category   Category         @relation(fields: [categoryId], references: [id])
+  variants   ProductVariant[]
+  images     ProductImage[]
+  tags       ProductTagMap[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  reviews    Review[]
+  wishlists  Wishlist[]
+  embedding  ProductEmbedding?
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([slug])
+  @@map("products")
+}
+
+model ProductVariant {
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId     String  @map("product_id") @db.Uuid
+  size          String  @db.VarChar(10)
+  color         String  @db.VarChar(50)
+  colorCode     String? @map("color_code") @db.VarChar(7)
+  stockQuantity Int     @default(0) @map("stock_quantity")
+  sku           String  @unique @db.VarChar(50)
+  isActive      Boolean @default(true) @map("is_active")
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@index([stockQuantity])
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId String  @map("product_id") @db.Uuid
+  imageUrl  String  @map("image_url") @db.VarChar(500)
+  altText   String? @map("alt_text") @db.VarChar(255)
+  sortOrder Int     @default(0) @map("sort_order")
+  isPrimary Boolean @default(false) @map("is_primary")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+model ProductTag {
+  id    String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name  String  @unique @db.VarChar(50)
+  color String? @db.VarChar(7)
+
+  products ProductTagMap[]
+
+  @@map("product_tags")
+}
+
+model ProductTagMap {
+  productId String @map("product_id") @db.Uuid
+  tagId     String @map("tag_id") @db.Uuid
+
+  product Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag     ProductTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productId, tagId])
+  @@map("product_tag_map")
+}
+
+// =============================================================================
+// 3. CART & ORDERS
+// =============================================================================
+
+model Cart {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  guestId   String?  @map("guest_id") @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@index([userId])
+  @@index([guestId])
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cartId    String   @map("cart_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  variantId String   @map("variant_id") @db.Uuid
+  quantity  Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product        @relation(fields: [productId], references: [id])
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@map("cart_items")
+}
+
+model Order {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderNumber      String       @unique @map("order_number") @db.VarChar(20)
+  userId           String?      @map("user_id") @db.Uuid
+  status           OrderStatus  @default(pending)
+  subtotal         Decimal      @db.Decimal(15, 2)
+  shippingFee      Decimal      @default(0) @map("shipping_fee") @db.Decimal(15, 2)
+  discountAmount   Decimal      @default(0) @map("discount_amount") @db.Decimal(15, 2)
+  total            Decimal      @db.Decimal(15, 2)
+  voucherId        String?      @map("voucher_id") @db.Uuid
+  shippingName     String       @map("shipping_name") @db.VarChar(100)
+  shippingPhone    String       @map("shipping_phone") @db.VarChar(15)
+  shippingProvince String       @map("shipping_province") @db.VarChar(100)
+  shippingDistrict String       @map("shipping_district") @db.VarChar(100)
+  shippingWard     String       @map("shipping_ward") @db.VarChar(100)
+  shippingAddress  String       @map("shipping_address") @db.VarChar(255)
+  note             String?      @db.Text
+  cancelReason     String?      @map("cancel_reason") @db.Text
+  cancelledBy      CancelledBy? @map("cancelled_by")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  user          User?                @relation(fields: [userId], references: [id])
+  voucher       Voucher?             @relation(fields: [voucherId], references: [id])
+  items         OrderItem[]
+  payment       Payment?
+  statusHistory OrderStatusHistory[]
+  reviews       Review[]
+  returnRequest ReturnRequest?
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId     String  @map("order_id") @db.Uuid
+  productId   String  @map("product_id") @db.Uuid
+  variantId   String  @map("variant_id") @db.Uuid
+  productName String  @map("product_name") @db.VarChar(255)
+  variantInfo String  @map("variant_info") @db.VarChar(100)
+  price       Decimal @db.Decimal(15, 2)
+  quantity    Int
+  imageUrl    String? @map("image_url") @db.VarChar(500)
+
+  order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product        @relation(fields: [productId], references: [id])
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@map("order_items")
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId   String      @map("order_id") @db.Uuid
+  status    OrderStatus
+  note      String?     @db.Text
+  changedBy String?     @map("changed_by") @db.Uuid
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  changer User? @relation("StatusChanger", fields: [changedBy], references: [id])
+
+  @@map("order_status_history")
+}
+
+// =============================================================================
+// 4. PAYMENTS
+// =============================================================================
+
+model Payment {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId       String        @unique @map("order_id") @db.Uuid
+  method        PaymentMethod
+  status        PaymentStatus @default(pending)
+  amount        Decimal       @db.Decimal(15, 2)
+  transactionId String?       @map("transaction_id") @db.VarChar(100)
+  paymentData   Json?         @map("payment_data") @db.JsonB
+  paidAt        DateTime?     @map("paid_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+// =============================================================================
+// 5. VOUCHERS
+// =============================================================================
+
+model Voucher {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code          String      @unique @db.VarChar(20)
+  type          VoucherType
+  value         Decimal     @db.Decimal(15, 2)
+  minOrderValue Decimal     @default(0) @map("min_order_value") @db.Decimal(15, 2)
+  maxDiscount   Decimal?    @map("max_discount") @db.Decimal(15, 2)
+  usageLimit    Int?        @map("usage_limit")
+  usedCount     Int         @default(0) @map("used_count")
+  vipOnly       VipTier?    @map("vip_only")
+  startDate     DateTime    @map("start_date")
+  endDate       DateTime    @map("end_date")
+  isActive      Boolean     @default(true) @map("is_active")
+  createdBy     String      @map("created_by") @db.Uuid
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  creator      User          @relation("VoucherCreator", fields: [createdBy], references: [id])
+  orders       Order[]
+  userVouchers UserVoucher[]
+
+  @@index([code])
+  @@map("vouchers")
+}
+
+model UserVoucher {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  voucherId String    @map("voucher_id") @db.Uuid
+  isUsed    Boolean   @default(false) @map("is_used")
+  usedAt    DateTime? @map("used_at")
+  claimedAt DateTime  @default(now()) @map("claimed_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voucher Voucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, voucherId])
+  @@map("user_vouchers")
+}
+
+// =============================================================================
+// 6. REVIEWS & WISHLIST
+// =============================================================================
+
+model Review {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
+  orderId    String   @map("order_id") @db.Uuid
+  rating     Int
+  comment    String?  @db.Text
+  isApproved Boolean  @default(true) @map("is_approved")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user    User          @relation(fields: [userId], references: [id])
+  product Product       @relation(fields: [productId], references: [id])
+  order   Order         @relation(fields: [orderId], references: [id])
+  images  ReviewImage[]
+
+  @@index([productId])
+  @@map("reviews")
+}
+
+model ReviewImage {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reviewId  String @map("review_id") @db.Uuid
+  imageUrl  String @map("image_url") @db.VarChar(500)
+  sortOrder Int    @default(0) @map("sort_order")
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@map("review_images")
+}
+
+model Wishlist {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlists")
+}
+
+// =============================================================================
+// 7. BLOG & CONTENT
+// =============================================================================
+
+model BlogCategory {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name     String @db.VarChar(100)
+  nameEn   String? @map("name_en") @db.VarChar(100)
+  slug     String @unique @db.VarChar(100)
+  sortOrder Int   @default(0) @map("sort_order")
+
+  blogs Blog[]
+
+  @@map("blog_categories")
+}
+
+model Blog {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String   @db.VarChar(255)
+  titleEn      String?  @map("title_en") @db.VarChar(255)
+  slug         String   @unique @db.VarChar(255)
+  content      String   @db.Text
+  contentEn    String?  @map("content_en") @db.Text
+  excerpt      String?  @db.VarChar(500)
+  thumbnailUrl String?  @map("thumbnail_url") @db.VarChar(500)
+  categoryId   String   @map("category_id") @db.Uuid
+  authorId     String   @map("author_id") @db.Uuid
+  isPublished  Boolean  @default(false) @map("is_published")
+  viewCount    Int      @default(0) @map("view_count")
+  publishedAt  DateTime? @map("published_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  category BlogCategory @relation(fields: [categoryId], references: [id])
+  author   User         @relation("BlogAuthor", fields: [authorId], references: [id])
+
+  @@index([slug])
+  @@index([isPublished, publishedAt(sort: Desc)])
+  @@map("blogs")
+}
+
+model Banner {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String         @db.VarChar(255)
+  imageUrl  String         @map("image_url") @db.VarChar(500)
+  linkUrl   String?        @map("link_url") @db.VarChar(500)
+  position  BannerPosition
+  sortOrder Int            @default(0) @map("sort_order")
+  isActive  Boolean        @default(true) @map("is_active")
+  startDate DateTime?      @map("start_date")
+  endDate   DateTime?      @map("end_date")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  @@map("banners")
+}
+
+// =============================================================================
+// 8. NOTIFICATIONS
+// =============================================================================
+
+model Notification {
+  id        String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String              @map("user_id") @db.Uuid
+  type      NotificationType
+  title     String              @db.VarChar(255)
+  message   String              @db.Text
+  data      Json?               @db.JsonB
+  isRead    Boolean             @default(false) @map("is_read")
+  channel   NotificationChannel
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// =============================================================================
+// 9. ADMIN SETTINGS & SHIPPING
+// =============================================================================
+
+model AdminSetting {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key       String   @unique @db.VarChar(100)
+  value     String   @db.Text
+  updatedBy String?  @map("updated_by") @db.Uuid
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  updater User? @relation(fields: [updatedBy], references: [id])
+
+  @@map("admin_settings")
+}
+
+model ShippingZone {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  zoneName  String   @map("zone_name") @db.VarChar(100)
+  fee       Int
+  provinces String[]
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("shipping_zones")
+}
+
+// =============================================================================
+// 10. RETURN/EXCHANGE
+// =============================================================================
+
+model ReturnRequest {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId      String       @unique @map("order_id") @db.Uuid
+  userId       String       @map("user_id") @db.Uuid
+  type         ReturnType
+  reason       String       @db.Text
+  status       ReturnStatus @default(pending)
+  adminNote    String?      @map("admin_note") @db.Text
+  refundAmount Decimal?     @map("refund_amount") @db.Decimal(15, 2)
+  processedBy  String?      @map("processed_by") @db.Uuid
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  order     Order @relation(fields: [orderId], references: [id])
+  user      User  @relation("ReturnUser", fields: [userId], references: [id])
+  processor User? @relation("ReturnProcessor", fields: [processedBy], references: [id])
+
+  @@map("return_requests")
+}
+
+// =============================================================================
+// 11. AI — CHAT & BEHAVIOR
+// =============================================================================
+
+model ChatSession {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String?  @map("user_id") @db.Uuid
+  guestId       String?  @map("guest_id") @db.VarChar(100)
+  startedAt     DateTime @default(now()) @map("started_at")
+  lastMessageAt DateTime @default(now()) @map("last_message_at")
+
+  user     User?         @relation(fields: [userId], references: [id])
+  messages ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  role      ChatRole
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model BehaviorEvent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  guestId   String?  @map("guest_id") @db.VarChar(100)
+  eventType String   @map("event_type") @db.VarChar(50)
+  eventData Json     @map("event_data") @db.JsonB
+  sessionId String?  @map("session_id") @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([eventType])
+  @@map("behavior_events")
+}
+
+// pgvector — embedding sản phẩm cho AI Search
+model ProductEmbedding {
+  id        String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId String                      @unique @map("product_id") @db.Uuid
+  embedding Unsupported("vector(384)")? // sentence-transformers MiniLM output
+  updatedAt DateTime                    @updatedAt @map("updated_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_embeddings")
+}
