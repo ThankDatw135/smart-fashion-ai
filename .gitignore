@@ -1,0 +1,82 @@
+# ===========================
+# Smart Fashion AI — .gitignore
+# ===========================
+
+# --- Dependencies ---
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# --- Build outputs ---
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# --- Environment variables ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+docker/.env
+
+# --- Keys & Secrets ---
+keys/
+*.pem
+*.key
+*.cert
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.venv/
+*.egg-info/
+.eggs/
+*.egg
+
+# --- Uploads (dev) ---
+uploads/products/*
+uploads/avatars/*
+uploads/reviews/*
+uploads/blog/*
+uploads/banners/*
+!uploads/**/.gitkeep
+
+# --- IDE & OS ---
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Testing ---
+coverage/
+.nyc_output/
+htmlcov/
+.pytest_cache/
+
+# --- Docker ---
+docker/data/
+
+# --- Misc ---
+*.tgz
+.eslintcache
+.turbo
