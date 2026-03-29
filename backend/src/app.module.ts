@@ -29,6 +29,9 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js
 
 // Feature Modules
 import { HealthModule } from './modules/health/health.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
+import { UsersModule } from './modules/users/users.module.js';
+import { MailModule } from './modules/mail/mail.module.js';
 
 @Module({
   imports: [
@@ -69,6 +72,9 @@ import { HealthModule } from './modules/health/health.module.js';
 
     // === Feature Modules ===
     HealthModule,
+    AuthModule,    // Phase 2: Xác thực & Phân quyền
+    UsersModule,   // Phase 2: Quản lý hồ sơ người dùng
+    MailModule,    // Phase 2: BullMQ mail processor
   ],
   providers: [
     // Throttler bảo vệ toàn bộ endpoints
