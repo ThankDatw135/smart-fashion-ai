@@ -1,0 +1,109 @@
+{
+  "combinations": [
+    {
+      "id": 1,
+      "name": "Casual Basic Nam",
+      "items": ["áo thun trắng/đen", "quần jean xanh", "sneaker trắng"],
+      "occasion": ["đi chơi", "cuối tuần", "đi cafe"],
+      "style": "casual",
+      "gender": "male",
+      "tips": "Combo kinh điển, không bao giờ lỗi mode. Cuộn tay áo lên tạo điểm nhấn.",
+      "color_harmony": "Trắng + xanh denim + trắng = hài hòa, sáng sủa"
+    },
+    {
+      "id": 2,
+      "name": "Office Lịch Sự Nam",
+      "items": ["áo sơ mi trắng/xanh nhạt", "quần âu xám/đen", "giày tây nâu/đen", "thắt lưng da"],
+      "occasion": ["đi làm", "họp", "phỏng vấn"],
+      "style": "office",
+      "gender": "male",
+      "tips": "Chọn sơ mi vừa form, không quá rộng. Thắt lưng cùng tông với giày.",
+      "color_harmony": "Trắng/xanh nhạt + xám/đen + nâu = chuyên nghiệp, đáng tin cậy"
+    },
+    {
+      "id": 3,
+      "name": "Streetwear Cool Nam",
+      "items": ["hoodie oversize", "quần jogger", "sneaker chunky", "bucket hat"],
+      "occasion": ["đi chơi", "dạo phố", "concert"],
+      "style": "streetwear",
+      "gender": "male",
+      "tips": "Chọn hoodie 1-2 size lớn hơn. Phối màu tối + 1 điểm nhấn sáng.",
+      "color_harmony": "Đen + xám + sneaker trắng = cá tính nhưng không lòe loẹt"
+    },
+    {
+      "id": 4,
+      "name": "Date Night Nữ",
+      "items": ["váy midi", "sandal cao gót", "túi clutch nhỏ", "bông tai statement"],
+      "occasion": ["hẹn hò", "dinner", "đi ăn nhà hàng"],
+      "style": "trendy",
+      "gender": "female",
+      "tips": "Váy midi vừa quý phái vừa thoải mái. Chọn gót 5-7cm để vừa cao vừa dễ đi.",
+      "color_harmony": "Đỏ đô/hồng pastel + nude + gold = nữ tính, cuốn hút"
+    },
+    {
+      "id": 5,
+      "name": "Casual Cool Nữ",
+      "items": ["áo thun crop top", "quần jean ống rộng", "sneaker", "kính mát"],
+      "occasion": ["đi chơi", "chụp ảnh", "đi cafe"],
+      "style": "casual",
+      "gender": "female",
+      "tips": "Quần ống rộng cạp cao giúp chân dài hơn. Crop top chỉ hở 2-3cm eo là đủ.",
+      "color_harmony": "Trắng + xanh denim + trắng = tươi trẻ, năng động"
+    },
+    {
+      "id": 6,
+      "name": "Office Thanh Lịch Nữ",
+      "items": ["áo blouse", "chân váy bút chì", "giày cao gót", "blazer"],
+      "occasion": ["đi làm", "họp", "thuyết trình"],
+      "style": "office",
+      "gender": "female",
+      "tips": "Blazer oversized 1 size tạo cảm giác quyền lực. Chân váy đến gối là độ dài lý tưởng.",
+      "color_harmony": "Trắng + đen/navy + nude = thanh lịch, chuyên nghiệp"
+    },
+    {
+      "id": 7,
+      "name": "Minimalist Unisex",
+      "items": ["áo thun basic trắng", "quần tây suông", "giày loafer", "đồng hồ tối giản"],
+      "occasion": ["đi cafe", "đi ăn", "chụp ảnh"],
+      "style": "minimalist",
+      "gender": "unisex",
+      "tips": "Ít chi tiết = tập trung vào chất liệu. Chọn vải tốt, form chuẩn.",
+      "color_harmony": "Trắng + be + nâu nhạt = tối giản nhưng sang trọng"
+    },
+    {
+      "id": 8,
+      "name": "Du Lịch Biển",
+      "items": ["áo thun nhẹ", "quần short", "sandal/dép lê", "mũ rộng vành", "kính mát"],
+      "occasion": ["du lịch biển", "nghỉ dưỡng", "picnic"],
+      "style": "casual",
+      "gender": "unisex",
+      "tips": "Chọn vải cotton hoặc linen thoáng mát. Màu sáng cho cảm giác mát mẻ.",
+      "color_harmony": "Trắng + xanh biển + be = tươi mát, thư giãn"
+    },
+    {
+      "id": 9,
+      "name": "Gym & Workout",
+      "items": ["áo thun dry-fit", "quần short thể thao / legging", "giày chạy", "vớ thể thao"],
+      "occasion": ["tập gym", "chạy bộ", "yoga"],
+      "style": "sport",
+      "gender": "unisex",
+      "tips": "Ưu tiên chất liệu co giãn, thấm hút tốt. Tránh cotton thường vì giữ mồ hôi.",
+      "color_harmony": "Đen + neon (xanh/cam/hồng) = khỏe khoắn, năng động"
+    },
+    {
+      "id": 10,
+      "name": "Party & Event Nữ",
+      "items": ["đầm dự tiệc", "cao gót mảnh", "túi clutch", "trang sức statement"],
+      "occasion": ["party", "tiệc sinh nhật", "sự kiện"],
+      "style": "trendy",
+      "gender": "female",
+      "tips": "Chọn đầm có chi tiết đặc biệt (sequin, cổ V, lưng trần). Trang sức đừng quá nhiều — chỉ 1-2 món nổi bật.",
+      "color_harmony": "Đen + gold / Đỏ + bạc = sang trọng, nổi bật"
+    }
+  ],
+  "layering_rules": {
+    "basic": "Lớp trong mỏng nhẹ + Lớp giữa giữ ấm + Lớp ngoài chống gió",
+    "color_rule": "Tối đa 3 màu chính trong 1 outfit. Dùng quy tắc 60-30-10 (màu chủ đạo 60%, màu phụ 30%, điểm nhấn 10%)",
+    "proportion": "Trên ôm dưới rộng, hoặc trên rộng dưới ôm — không nên cả 2 đều rộng hoặc đều ôm"
+  }
+}

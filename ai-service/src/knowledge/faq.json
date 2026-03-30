@@ -1,0 +1,74 @@
+{
+  "categories": {
+    "shipping": {
+      "label": "Vận Chuyển",
+      "questions": [
+        {
+          "q": "Giao hàng mất bao lâu?",
+          "a": "Thời gian giao hàng tùy khu vực:\n- Nội thành TP.HCM / Hà Nội: 1-2 ngày\n- Các tỉnh lân cận: 2-3 ngày\n- Các tỉnh xa: 3-5 ngày\nThời gian có thể thay đổi vào mùa cao điểm (lễ, Tết).",
+          "keywords": ["giao hàng", "ship", "vận chuyển", "bao lâu", "mấy ngày"]
+        },
+        {
+          "q": "Phí ship bao nhiêu?",
+          "a": "Phí vận chuyển chia theo 3 vùng:\n- Nội thành TP.HCM / Hà Nội: 25.000đ\n- Các tỉnh lân cận: 35.000đ\n- Các tỉnh xa: 50.000đ\n🎁 Khách VIP Silver trở lên được FREE SHIP cho đơn từ 500.000đ!",
+          "keywords": ["phí ship", "phí vận chuyển", "tiền ship", "freeship", "miễn phí ship"]
+        }
+      ]
+    },
+    "payment": {
+      "label": "Thanh Toán",
+      "questions": [
+        {
+          "q": "Shop hỗ trợ thanh toán bằng gì?",
+          "a": "Shop hỗ trợ 3 phương thức thanh toán:\n1. **COD** (Thanh toán khi nhận hàng) — phổ biến nhất\n2. **Chuyển khoản ngân hàng** — qua VCB Digibank QR\n3. **QR Code** — Admin cung cấp mã QR để quét thanh toán\n\nLưu ý: Nội dung chuyển khoản ghi rõ Mã Đơn Hàng để xác nhận nhanh hơn.",
+          "keywords": ["thanh toán", "trả tiền", "chuyển khoản", "COD", "QR", "payment"]
+        }
+      ]
+    },
+    "return_policy": {
+      "label": "Đổi Trả",
+      "questions": [
+        {
+          "q": "Chính sách đổi trả như thế nào?",
+          "a": "Chính sách đổi trả trong 7 ngày kể từ ngày nhận hàng:\n\n✅ **Được đổi/trả khi:**\n- Sản phẩm bị lỗi (rách, ố, sai mẫu)\n- Giao sai size hoặc sai màu\n- Sản phẩm không đúng mô tả\n\n❌ **KHÔNG đổi/trả khi:**\n- Đã sử dụng, giặt, hoặc cắt tag\n- Quá 7 ngày từ ngày nhận\n- Hư hỏng do người dùng\n\n📋 **Quy trình:** Liên hệ shop → Gửi ảnh sản phẩm → Shop xác nhận → Gửi trả hàng → Nhận hoàn tiền/hàng mới trong 3-5 ngày.",
+          "keywords": ["đổi trả", "trả hàng", "hoàn tiền", "return", "đổi size", "đổi màu"]
+        },
+        {
+          "q": "Có được đổi size không?",
+          "a": "Có! Bạn được đổi size 1 lần miễn phí trong vòng 7 ngày nếu:\n- Sản phẩm chưa sử dụng, còn nguyên tag\n- Còn size muốn đổi trong kho\n\nPhí ship đổi hàng: Shop chịu nếu lỗi từ shop, khách chịu nếu đổi do sở thích.",
+          "keywords": ["đổi size", "sai size", "size không vừa", "đổi cỡ"]
+        }
+      ]
+    },
+    "vip": {
+      "label": "Chương Trình VIP",
+      "questions": [
+        {
+          "q": "Chương trình VIP có gì?",
+          "a": "Smart Fashion có 3 cấp VIP dựa trên tổng chi tiêu:\n\n🥈 **Silver** (≥ 2.000.000đ):\n- Giảm 3% tất cả đơn\n- Free ship đơn ≥ 500K\n\n🥇 **Gold** (≥ 10.000.000đ):\n- Giảm 5% tất cả đơn\n- Free ship mọi đơn\n- Ưu tiên xử lý đơn hàng\n\n💎 **Diamond** (≥ 20.000.000đ):\n- Giảm 8% tất cả đơn\n- Free ship mọi đơn\n- Quà sinh nhật đặc biệt\n- Tư vấn style riêng\n\nHạng VIP được tính tự động dựa trên tổng chi tiêu trong 12 tháng.",
+          "keywords": ["VIP", "hạng", "ưu đãi", "thành viên", "tích điểm", "silver", "gold", "diamond"]
+        }
+      ]
+    },
+    "warranty": {
+      "label": "Bảo Hành",
+      "questions": [
+        {
+          "q": "Sản phẩm có bảo hành không?",
+          "a": "Shop bảo hành:\n- **Lỗi sản xuất** (đường chỉ, nút, khóa kéo): Bảo hành 30 ngày\n- **Phai màu bất thường**: Bảo hành 15 ngày\n- **Hư hỏng do sử dụng**: Không bảo hành\n\nLiên hệ shop kèm ảnh sản phẩm để được hỗ trợ nhanh nhất.",
+          "keywords": ["bảo hành", "warranty", "lỗi", "hỏng", "sửa"]
+        }
+      ]
+    },
+    "account": {
+      "label": "Tài Khoản",
+      "questions": [
+        {
+          "q": "Làm sao để tạo tài khoản?",
+          "a": "Bạn có thể tạo tài khoản bằng:\n1. **Đăng ký email** — Nhập email + mật khẩu\n2. **Đăng nhập Google** — Nhanh gọn 1 click\n\nTài khoản giúp bạn: theo dõi đơn hàng, tích lũy VIP, lưu địa chỉ giao hàng, và nhận ưu đãi riêng.",
+          "keywords": ["tạo tài khoản", "đăng ký", "đăng nhập", "sign up", "login"]
+        }
+      ]
+    }
+  }
+}

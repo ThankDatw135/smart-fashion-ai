@@ -1,0 +1,9 @@
+[project]
+name = "smart-fashion-ai-service"
+version = "1.0.0"
+description = "AI Service for Smart Fashion AI (Chatbot, Search, Recommendation, Behavior)"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

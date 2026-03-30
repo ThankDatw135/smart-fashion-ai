@@ -1,0 +1,105 @@
+{
+  "styles": {
+    "streetwear": {
+      "name": "Streetwear",
+      "description": "Phong cách đường phố, năng động, cá tính. Ưa chuộng bởi giới trẻ Gen Z.",
+      "key_items": ["hoodie", "áo thun oversize", "quần jogger", "sneaker", "bomber jacket", "bucket hat"],
+      "keywords": ["street", "đường phố", "cá tính", "năng động", "oversize", "hiphop", "urban"],
+      "color_palette": ["đen", "trắng", "xám", "đỏ", "cam", "neon"],
+      "suitable_for": ["đi chơi", "đi cafe", "dạo phố", "concert", "sinh nhật bạn bè"],
+      "age_range": "16-30",
+      "gender": "unisex"
+    },
+    "minimalist": {
+      "name": "Minimalist",
+      "description": "Phong cách tối giản, thanh lịch. Ít chi tiết, tập trung form dáng và chất liệu.",
+      "key_items": ["áo thun basic", "quần tây suông", "áo sơ mi trắng", "giày loafer", "áo khoác blazer"],
+      "keywords": ["tối giản", "minimalist", "basic", "đơn giản", "sạch sẽ", "tinh tế", "sang trọng"],
+      "color_palette": ["trắng", "đen", "be", "xám", "navy", "nâu nhạt"],
+      "suitable_for": ["đi làm", "đi cafe", "hẹn hò", "chụp ảnh", "đi ăn nhà hàng"],
+      "age_range": "20-40",
+      "gender": "unisex"
+    },
+    "office": {
+      "name": "Office / Công Sở",
+      "description": "Phong cách lịch sự, chuyên nghiệp. Phù hợp môi trường văn phòng và công sở.",
+      "key_items": ["áo sơ mi", "quần âu", "giày tây", "blazer", "chân váy bút chì", "áo vest"],
+      "keywords": ["công sở", "office", "lịch sự", "chuyên nghiệp", "formal", "đi làm", "họp"],
+      "color_palette": ["trắng", "xanh navy", "đen", "xám", "be", "xanh pastel"],
+      "suitable_for": ["đi làm", "họp", "phỏng vấn", "thuyết trình", "tiệc công ty"],
+      "age_range": "22-50",
+      "gender": "unisex"
+    },
+    "casual": {
+      "name": "Casual / Hàng Ngày",
+      "description": "Phong cách thoải mái hàng ngày, dễ mặc, không cầu kỳ nhưng vẫn đẹp.",
+      "key_items": ["áo thun", "quần jean", "sneaker", "áo polo", "quần short", "sandal"],
+      "keywords": ["thoải mái", "casual", "hàng ngày", "đơn giản", "dễ mặc", "thường ngày"],
+      "color_palette": ["xanh denim", "trắng", "đen", "xám", "pastel", "earth tone"],
+      "suitable_for": ["đi chơi", "đi siêu thị", "cuối tuần", "du lịch", "picnic"],
+      "age_range": "15-45",
+      "gender": "unisex"
+    },
+    "trendy": {
+      "name": "Trendy / Thời Thượng",
+      "description": "Phong cách bắt trend, theo xu hướng mới nhất. Nổi bật và ấn tượng.",
+      "key_items": ["crop top", "quần ống rộng", "áo croptop", "boots", "túi mini", "kính mát"],
+      "keywords": ["trendy", "thời thượng", "hot trend", "xu hướng", "nổi bật", "sành điệu", "fashionista"],
+      "color_palette": ["hồng pastel", "tím lavender", "xanh mint", "vàng mustard", "coral"],
+      "suitable_for": ["đi chơi", "chụp ảnh", "event", "party", "date"],
+      "age_range": "18-35",
+      "gender": "unisex"
+    }
+  },
+  "occasions": {
+    "date": {
+      "name": "Hẹn hò",
+      "description": "Gợi ý trang phục cho buổi hẹn hò đầu tiên hoặc đi chơi cùng người yêu.",
+      "male_suggestions": ["áo sơ mi + quần tây slim + giày loafer", "áo polo + quần chinos + sneaker trắng"],
+      "female_suggestions": ["váy midi + sandal cao gót", "quần ống rộng + áo blouse + túi clutch"],
+      "tips": ["Mặc vừa form, không quá chật hoặc quá rộng", "Chọn màu pastel hoặc trung tính tạo cảm giác nhẹ nhàng", "Nước hoa nhẹ nhàng là điểm cộng lớn"]
+    },
+    "party": {
+      "name": "Tiệc / Party",
+      "description": "Trang phục nổi bật, ấn tượng cho các buổi tiệc và sự kiện.",
+      "male_suggestions": ["áo sơ mi đen + quần tây + giày tây", "blazer + áo thun đen + quần jean đen"],
+      "female_suggestions": ["đầm dự tiệc + cao gót", "crop top + váy xòe + boots"],
+      "tips": ["Có thể chọn trang phục có chất liệu bóng hoặc sequin", "Phụ kiện nổi bật như vòng cổ, bông tai statement"]
+    },
+    "office": {
+      "name": "Đi Làm",
+      "description": "Trang phục lịch sự, chuyên nghiệp cho môi trường công sở.",
+      "male_suggestions": ["sơ mi + quần âu + giày tây", "áo vest + sơ mi + cà vạt"],
+      "female_suggestions": ["sơ mi + chân váy bút chì + giày cao gót", "blazer + quần tây ống đứng"],
+      "tips": ["Tránh quần short, dép lê, áo ba lỗ", "Chọn màu trung tính, tránh hoa văn quá rực rỡ"]
+    },
+    "travel": {
+      "name": "Du Lịch",
+      "description": "Trang phục thoải mái, tiện lợi cho các chuyến du lịch.",
+      "male_suggestions": ["áo thun + quần short + sneaker", "áo khoác gió + quần jogger + giày thể thao"],
+      "female_suggestions": ["đầm suông + sandal + mũ rộng vành", "áo thun + quần jean + sneaker + ba lô"],
+      "tips": ["Ưu tiên chất liệu thoáng mát, nhanh khô", "Mang giày đi bộ thoải mái"]
+    },
+    "sport": {
+      "name": "Thể Thao",
+      "description": "Trang phục năng động cho hoạt động thể thao và gym.",
+      "male_suggestions": ["áo tank top + quần short thể thao + giày chạy", "áo thun dry-fit + quần jogger"],
+      "female_suggestions": ["sports bra + legging + giày chạy", "áo thun thể thao + quần short + sneaker"],
+      "tips": ["Chọn chất liệu thấm hút mồ hôi tốt (polyester, nylon)", "Tránh quần jean hoặc vải cứng"]
+    }
+  },
+  "season_tips": {
+    "summer": {
+      "name": "Mùa Hè (Nóng)",
+      "tips": ["Chọn chất liệu cotton, linen thoáng mát", "Màu sáng giúp phản xạ nhiệt tốt hơn", "Áo ba lỗ, quần short, váy ngắn là lựa chọn tối ưu", "Mũ rộng vành và kính mát bảo vệ da"]
+    },
+    "winter": {
+      "name": "Mùa Đông (Lạnh)",
+      "tips": ["Mặc layer: áo giữ nhiệt + áo khoác + áo gió bên ngoài", "Chất liệu nỉ, len, da giữ ấm tốt", "Màu tối (đen, nâu, xám đậm) phù hợp", "Khăn quàng cổ và găng tay là phụ kiện cần thiết"]
+    },
+    "rainy": {
+      "name": "Mùa Mưa",
+      "tips": ["Chọn chất liệu nhanh khô, chống nước", "Tránh giày vải, ưu tiên giày chống nước", "Áo khoác gió chống thấm là must-have", "Màu tối giúp ít bị ố bẩn khi mưa"]
+    }
+  }
+}

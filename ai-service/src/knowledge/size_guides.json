@@ -1,0 +1,107 @@
+{
+  "male": {
+    "label": "Nam",
+    "sizes": {
+      "S": {
+        "height_range": [155, 165],
+        "weight_range": [45, 55],
+        "chest_cm": [84, 88],
+        "waist_cm": [70, 74],
+        "description": "Dáng nhỏ, hơi gầy"
+      },
+      "M": {
+        "height_range": [163, 172],
+        "weight_range": [55, 65],
+        "chest_cm": [88, 96],
+        "waist_cm": [74, 80],
+        "description": "Dáng trung bình"
+      },
+      "L": {
+        "height_range": [170, 178],
+        "weight_range": [63, 75],
+        "chest_cm": [96, 104],
+        "waist_cm": [80, 86],
+        "description": "Dáng vừa phải, cân đối"
+      },
+      "XL": {
+        "height_range": [175, 185],
+        "weight_range": [73, 85],
+        "chest_cm": [104, 112],
+        "waist_cm": [86, 92],
+        "description": "Dáng lớn, to cao"
+      },
+      "XXL": {
+        "height_range": [180, 195],
+        "weight_range": [83, 100],
+        "chest_cm": [112, 120],
+        "waist_cm": [92, 100],
+        "description": "Dáng rất lớn"
+      }
+    }
+  },
+  "female": {
+    "label": "Nữ",
+    "sizes": {
+      "XS": {
+        "height_range": [148, 155],
+        "weight_range": [38, 45],
+        "bust_cm": [76, 80],
+        "waist_cm": [58, 62],
+        "hip_cm": [82, 86],
+        "description": "Dáng nhỏ nhắn"
+      },
+      "S": {
+        "height_range": [153, 160],
+        "weight_range": [43, 50],
+        "bust_cm": [80, 84],
+        "waist_cm": [62, 66],
+        "hip_cm": [86, 90],
+        "description": "Dáng mảnh mai"
+      },
+      "M": {
+        "height_range": [158, 165],
+        "weight_range": [48, 58],
+        "bust_cm": [84, 92],
+        "waist_cm": [66, 72],
+        "hip_cm": [90, 96],
+        "description": "Dáng trung bình"
+      },
+      "L": {
+        "height_range": [163, 170],
+        "weight_range": [56, 68],
+        "bust_cm": [92, 100],
+        "waist_cm": [72, 78],
+        "hip_cm": [96, 102],
+        "description": "Dáng đầy đặn"
+      },
+      "XL": {
+        "height_range": [165, 175],
+        "weight_range": [65, 80],
+        "bust_cm": [100, 108],
+        "waist_cm": [78, 86],
+        "hip_cm": [102, 110],
+        "description": "Dáng lớn, đầy đặn"
+      }
+    }
+  },
+  "tips": {
+    "general": [
+      "Nếu ở giữa 2 size, nên chọn size lớn hơn để thoải mái",
+      "Áo ôm body (slim fit) nên lấy đúng size, áo oversize nên lên 1-2 size",
+      "Quần jean co giãn có thể lấy đúng size hoặc nhỏ hơn 1 size",
+      "Mỗi thương hiệu có bảng size khác nhau, nên tham khảo bảng size riêng của shop"
+    ],
+    "fit_preference": {
+      "slim_fit": "Lấy đúng size hoặc nhỏ hơn 1 size. Form ôm sát cơ thể.",
+      "regular_fit": "Lấy đúng size. Form chuẩn, thoải mái vừa phải.",
+      "oversize": "Lên 1-2 size so với size thường. Form rộng rãi, thoải mái.",
+      "loose_fit": "Lên 1 size. Form rộng nhưng không quá oversized."
+    }
+  },
+  "measurement_guide": {
+    "chest": "Đo vòng quanh ngực tại điểm rộng nhất, giữ thước dây ngang",
+    "waist": "Đo vòng quanh eo tại điểm nhỏ nhất (trên rốn ~2cm)",
+    "hip": "Đo vòng quanh mông tại điểm rộng nhất",
+    "height": "Đo từ đỉnh đầu đến gót chân, đứng thẳng"
+  }
+}

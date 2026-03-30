@@ -1,9 +1,10 @@
 # ========================================
-# Smart Fashion AI — Hạ Tầng Phục Vụ (Docker Infrastructure)
+# Smart Fashion AI — Docker Compose (Infra + Services)
 # ========================================
-# Cách khởi chạy:
+# Chạy hạ tầng only:
+#   docker compose -f docker/docker-compose.yml --env-file docker/.env up -d postgres redis rabbitmq
+# Chạy tất cả:
 #   docker compose -f docker/docker-compose.yml --env-file docker/.env up -d
-#   Hoặc từ root: npm run docker:up
 # ========================================
 
 name: smart-fashion
@@ -47,7 +48,7 @@ services:
       redis-server
       --requirepass ${REDIS_PASSWORD}
       --maxmemory 256mb
-      --maxmemory-policy allkeys-lru
+      --maxmemory-policy noeviction
       --appendonly yes
     volumes:
       - redis_data:/data
@@ -85,9 +86,63 @@ services:
     networks:
       - sf-network
 
-# ─────────────────────────────────────
-# Volumes — Lưu trữ dữ liệu lâu dài (Persist data)
-# ─────────────────────────────────────
+  # ─────────────────────────────────────
+  # Backend — NestJS 11 (TypeScript)
+  # ─────────────────────────────────────
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: sf-backend
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-4000}:4000"
+    env_file:
+      - ../backend/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      REDIS_HOST: redis
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/${RABBITMQ_VHOST}
+    volumes:
+      - ../uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - sf-network
+
+  # ─────────────────────────────────────
+  # AI Service — FastAPI (Python 3.12)
+  # ─────────────────────────────────────
+  ai-service:
+    build:
+      context: ../ai-service
+      dockerfile: Dockerfile
+    container_name: sf-ai-service
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../ai-service/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/${RABBITMQ_VHOST}
+      BACKEND_API_URL: http://backend:4000/api/v1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - sf-network
+
 volumes:
   postgres_data:
     driver: local
@@ -99,6 +154,7 @@ volumes:
 # ─────────────────────────────────────
 # Network — Mạng riêng (Internal Network)
 # ─────────────────────────────────────
+
 networks:
   sf-network:
     driver: bridge

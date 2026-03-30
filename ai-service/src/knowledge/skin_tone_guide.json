@@ -1,0 +1,74 @@
+{
+  "skin_tones": {
+    "fair": {
+      "name": "Da trắng",
+      "description": "Tông da sáng, trắng hồng hoặc trắng ngà. Phổ biến ở người Việt miền Bắc.",
+      "recommended_colors": ["pastel (hồng nhạt, xanh mint, tím lavender)", "trắng", "xanh navy", "đỏ đô", "be", "xám nhạt", "hồng phấn", "xanh dương nhạt"],
+      "avoid_colors": ["vàng neon (làm da tái xanh)", "cam sáng", "neon xanh lá", "nude quá nhạt (hòa vào da)"],
+      "tips": [
+        "Da trắng hợp với hầu hết các màu, đặc biệt màu pastel",
+        "Tránh mặc toàn trắng từ đầu đến chân — dễ bị trôi",
+        "Màu đỏ đô, xanh navy làm nổi bật làn da sáng",
+        "Có thể thử màu nổi như đỏ tươi, hồng nóng"
+      ],
+      "outfit_examples": [
+        "Áo sơ mi xanh pastel + quần be → thanh lịch, nhẹ nhàng",
+        "Đầm hồng phấn + sandal trắng → nữ tính, dễ thương"
+      ]
+    },
+    "light_yellow": {
+      "name": "Da vàng sáng",
+      "description": "Tông da vàng ấm, sáng. Phổ biến nhất ở người Việt Nam.",
+      "recommended_colors": ["trắng kem", "xanh cổ vịt (teal)", "đỏ mận", "xanh navy", "nâu đất", "olive", "cam đất (terracotta)", "hồng đào"],
+      "avoid_colors": ["vàng chanh (trùng tông da)", "nâu nhạt (khó phân biệt với da)", "cam neon", "xanh lá neon"],
+      "tips": [
+        "Earthy tones (nâu, olive, terracotta) rất hợp với da vàng",
+        "Tránh màu quá sáng hoặc quá flourescent",
+        "Xanh cổ vịt và đỏ mận là 2 màu 'thần thánh' cho da vàng",
+        "Denim wash trung bình luôn an toàn"
+      ],
+      "outfit_examples": [
+        "Áo thun trắng kem + quần jean + sneaker → casual đẹp",
+        "Áo xanh cổ vịt + quần đen → nổi bật mà không quá lòe loẹt"
+      ]
+    },
+    "tan": {
+      "name": "Da ngăm",
+      "description": "Tông da ngăm, nâu nhẹ. Thường gặp ở người thường xuyên tiếp xúc nắng.",
+      "recommended_colors": ["trắng", "đỏ tươi", "vàng mustard", "cam đất", "xanh cobalt", "hồng nóng (hot pink)", "tím đậm", "xanh lá đậm"],
+      "avoid_colors": ["nâu sẫm (trùng tông da)", "be nhạt", "xám nhạt (làm da tối hơn)", "đen toàn bộ (quá nặng nề)"],
+      "tips": [
+        "Da ngăm hợp với màu sáng, tươi — tạo tương phản đẹp",
+        "Trắng là màu 'must have' cho da ngăm",
+        "Tone vàng ấm (mustard, gold) tôn da rất đẹp",
+        "Tránh phối quá nhiều màu tối — dễ bị chìm"
+      ],
+      "outfit_examples": [
+        "Áo thun trắng + quần jean + sneaker → sáng sủa, khỏe khoắn",
+        "Áo đỏ tươi + quần đen → nổi bật, cá tính"
+      ]
+    },
+    "dark": {
+      "name": "Da ngăm đen",
+      "description": "Tông da sẫm, nâu đậm. Ít phổ biến hơn nhưng rất cá tính.",
+      "recommended_colors": ["trắng", "vàng gold", "đỏ tươi", "cam", "xanh cobalt", "hồng neon", "bạc", "xanh lá tươi"],
+      "avoid_colors": ["nâu đen (trùng tông)", "xám đậm", "navy quá tối", "tím tối"],
+      "tips": [
+        "Màu sáng và nổi bật là chìa khóa — tạo contrast mạnh",
+        "Trắng, vàng gold, đỏ tươi luôn là lựa chọn an toàn",
+        "Có thể phối metallic (gold/silver) để nổi bật",
+        "Tránh mặc full đen — thử phối đen + 1 màu nổi (đỏ, vàng)"
+      ],
+      "outfit_examples": [
+        "Áo trắng + quần be + giày trắng → sáng, sạch sẽ",
+        "Áo vàng gold + quần đen → sang trọng, ấn tượng"
+      ]
+    }
+  },
+  "color_harmony_rules": {
+    "monochromatic": "Phối tông cùng màu nhưng khác sắc độ (xanh nhạt + xanh đậm)",
+    "complementary": "Phối 2 màu đối nhau trên bánh xe màu (đỏ + xanh lá)",
+    "analogous": "Phối 2-3 màu liền nhau trên bánh xe màu (xanh + xanh lá + vàng)",
+    "neutral_safe": "Đen + Trắng + Xám + Be luôn an toàn với mọi tông da"
+  }
+}
