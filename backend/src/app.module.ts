@@ -32,6 +32,8 @@ import { HealthModule } from './modules/health/health.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { MailModule } from './modules/mail/mail.module.js';
+import { CategoriesModule } from './modules/categories/categories.module.js';
+import { ProductsModule } from './modules/products/products.module.js';
 
 @Module({
   imports: [
@@ -72,9 +74,11 @@ import { MailModule } from './modules/mail/mail.module.js';
 
     // === Feature Modules ===
     HealthModule,
-    AuthModule,    // Phase 2: Xác thực & Phân quyền
-    UsersModule,   // Phase 2: Quản lý hồ sơ người dùng
-    MailModule,    // Phase 2: BullMQ mail processor
+    AuthModule, // Phase 2: Xác thực & Phân quyền
+    UsersModule, // Phase 2: Quản lý hồ sơ người dùng
+    MailModule, // Phase 2: BullMQ mail processor
+    CategoriesModule, // Phase 3: Danh mục sản phẩm
+    ProductsModule, // Phase 3: Sản phẩm, variants, tags, upload ảnh
   ],
   providers: [
     // Throttler bảo vệ toàn bộ endpoints
