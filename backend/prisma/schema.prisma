@@ -49,6 +49,7 @@ enum CancelledBy {
 
 enum PaymentMethod {
   cod
+  momo
   vcb_qr
   bank_transfer
 }

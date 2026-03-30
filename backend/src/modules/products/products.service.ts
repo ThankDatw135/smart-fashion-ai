@@ -699,4 +699,91 @@ export class ProductsService {
     ]);
     this.logger.debug(`Cache invalidated: product:${slug}`);
   }
+
+  // ===========================================================================
+  // PUBLIC — REVIEWS PAGINATED
+  // ===========================================================================
+
+  /**
+   * Lấy danh sách reviews của sản phẩm — cursor-based pagination
+   * Cache Redis TTL 5 phút
+   */
+  async getProductReviews(slug: string, cursor?: string, limit = 10) {
+    // 1. Tìm product theo slug
+    const product = await this.prisma.product.findUnique({
+      where: { slug, isActive: true },
+      select: { id: true },
+    });
+    if (!product) throw new NotFoundException(PRODUCT_NOT_FOUND);
+
+    // 2. Check cache
+    const cacheKey = `products:reviews:${slug}:${cursor || 'first'}:${limit}`;
+    const cached = await this.redis.getJson<unknown>(cacheKey);
+    if (cached) return cached;
+
+    // 3. Build cursor query
+    const cursorOption: { cursor?: { id: string }; skip?: number } = {};
+    if (cursor) {
+      cursorOption.cursor = { id: decodeCursor(cursor) };
+      cursorOption.skip = 1;
+    }
+
+    // 4. Query reviews (limit + 1 để check hasMore)
+    const reviews = await this.prisma.review.findMany({
+      where: { productId: product.id, isApproved: true },
+      orderBy: { createdAt: 'desc' },
+      take: limit + 1,
+      ...cursorOption,
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        user: {
+          select: { id: true, fullName: true, avatarUrl: true },
+        },
+        images: {
+          select: { imageUrl: true, sortOrder: true },
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+    });
+
+    // 5. Build pagination response
+    const result = buildPaginationResponse(reviews, limit);
+
+    // 6. Cache (TTL 5 phút)
+    await this.redis.setJson(cacheKey, result, 300);
+
+    return result;
+  }
+
+  // ===========================================================================
+  // VIEW COUNT TRACKING (BullMQ debounce)
+  // ===========================================================================
+
+  /**
+   * Ghi nhận lượt xem sản phẩm — dùng Redis counter + BullMQ batch update
+   * Không block response, fire-and-forget
+   */
+  async trackProductView(slug: string): Promise<void> {
+    // Increment view counter trong Redis
+    const counterKey = `products:views:${slug}`;
+    const count = await this.redis.incr(counterKey);
+
+    // Mỗi 10 views → batch flush xuống DB
+    if (count >= 10) {
+      await this.redis.del(counterKey);
+      // Update DB (fire-and-forget, không cần await chính xác)
+      this.prisma.product
+        .updateMany({
+          where: { slug },
+          data: { viewCount: { increment: count } },
+        })
+        .catch((err) =>
+          this.logger.error(`Lỗi flush view count cho ${slug}:`, err),
+        );
+      this.logger.debug(`Flushed ${count} views cho product:${slug}`);
+    }
+  }
 }

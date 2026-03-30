@@ -34,6 +34,10 @@ import { UsersModule } from './modules/users/users.module.js';
 import { MailModule } from './modules/mail/mail.module.js';
 import { CategoriesModule } from './modules/categories/categories.module.js';
 import { ProductsModule } from './modules/products/products.module.js';
+import { CartModule } from './modules/cart/cart.module.js';
+import { OrdersModule } from './modules/orders/orders.module.js';
+import { PaymentsModule } from './modules/payments/payments.module.js';
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
 
 @Module({
   imports: [
@@ -79,6 +83,10 @@ import { ProductsModule } from './modules/products/products.module.js';
     MailModule, // Phase 2: BullMQ mail processor
     CategoriesModule, // Phase 3: Danh mục sản phẩm
     ProductsModule, // Phase 3: Sản phẩm, variants, tags, upload ảnh
+    CartModule, // Phase 4: Giỏ hàng (Guest Redis + User DB)
+    OrdersModule, // Phase 4: Checkout flow + Quản lý đơn hàng
+    PaymentsModule, // Phase 4: COD, MoMo, Chuyển khoản
+    NotificationsModule, // Phase 4: Low stock alert + Admin notify
   ],
   providers: [
     // Throttler bảo vệ toàn bộ endpoints

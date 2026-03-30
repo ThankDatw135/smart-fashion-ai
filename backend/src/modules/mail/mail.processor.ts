@@ -57,6 +57,14 @@ export class MailProcessor extends WorkerHost {
           await this.sendWelcomeEmail(data.email);
           break;
 
+        case 'send-order-confirmation':
+          await this.sendOrderConfirmationEmail(data);
+          break;
+
+        case 'send-low-stock-alert':
+          await this.sendLowStockAlertEmail(data);
+          break;
+
         default:
           this.logger.warn(`Job mail không xác định: ${name}`);
       }
@@ -129,11 +137,114 @@ export class MailProcessor extends WorkerHost {
   }
 
   /**
+   * Gửi email xác nhận đơn hàng
+   */
+  private async sendOrderConfirmationEmail(data: {
+    email: string;
+    fullName: string;
+    orderNumber: string;
+    items: Array<{
+      productName: string;
+      variantInfo: string;
+      quantity: number;
+      subtotal: string;
+    }>;
+    subtotal: string;
+    shippingFee: string;
+    discount?: string;
+    total: string;
+    shippingName: string;
+    shippingPhone: string;
+    shippingAddress: string;
+    shippingWard: string;
+    shippingDistrict: string;
+    shippingProvince: string;
+  }) {
+    const template = this.templates.get('order-confirmation');
+    if (!template) {
+      this.logger.error('Template order-confirmation không tìm thấy');
+      return;
+    }
+
+    const frontendUrl = this.configService.get<string>(
+      'app.frontendUrl',
+      'http://localhost:3000',
+    );
+
+    const html = template({ ...data, frontendUrl });
+
+    await this.transporter.sendMail({
+      from: this.configService.get<string>(
+        'mail.from',
+        'noreply@smartfashion.vn',
+      ),
+      to: data.email,
+      subject: `✅ Xác nhận đơn hàng ${data.orderNumber} — Smart Fashion AI`,
+      html,
+    });
+
+    this.logger.log(
+      `✅ Email xác nhận đơn hàng đã gửi: ${data.email} (${data.orderNumber})`,
+    );
+  }
+
+  /**
+   * Gửi email cảnh báo tồn kho thấp cho Admin
+   */
+  private async sendLowStockAlertEmail(data: {
+    email: string;
+    totalVariants: number;
+    variants: Array<{
+      productName: string;
+      size: string;
+      color: string;
+      stockQuantity: number;
+    }>;
+  }) {
+    const template = this.templates.get('low-stock-alert');
+    if (!template) {
+      this.logger.error('Template low-stock-alert không tìm thấy');
+      return;
+    }
+
+    const adminUrl = this.configService.get<string>(
+      'app.adminUrl',
+      'http://localhost:3000/admin',
+    );
+
+    const html = template({
+      ...data,
+      adminUrl,
+      timestamp: new Date().toLocaleString('vi-VN'),
+    });
+
+    await this.transporter.sendMail({
+      from: this.configService.get<string>(
+        'mail.from',
+        'noreply@smartfashion.vn',
+      ),
+      to: data.email,
+      subject: `⚠️ Cảnh báo tồn kho thấp — ${data.totalVariants} sản phẩm`,
+      html,
+    });
+
+    this.logger.log(
+      `✅ Email cảnh báo tồn kho đã gửi: ${data.email} (${data.totalVariants} variants)`,
+    );
+  }
+
+  /**
    * Load và compile tất cả Handlebars templates từ thư mục templates/
    */
   private loadTemplates() {
     const templatesDir = path.resolve(__dirname, '..', '..', 'templates');
-    const templateFiles = ['verify-email', 'welcome', 'reset-password'];
+    const templateFiles = [
+      'verify-email',
+      'welcome',
+      'reset-password',
+      'order-confirmation',
+      'low-stock-alert',
+    ];
 
     for (const name of templateFiles) {
       const filePath = path.join(templatesDir, `${name}.hbs`);
@@ -146,7 +257,10 @@ export class MailProcessor extends WorkerHost {
           this.logger.warn(`Template file không tồn tại: ${filePath}`);
         }
       } catch (error) {
-        this.logger.error(`Lỗi load template ${name}:`, (error as Error).message);
+        this.logger.error(
+          `Lỗi load template ${name}:`,
+          (error as Error).message,
+        );
       }
     }
   }

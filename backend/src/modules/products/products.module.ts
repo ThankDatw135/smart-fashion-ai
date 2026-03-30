@@ -6,6 +6,7 @@ import { ProductsService } from './products.service.js';
 import { ImageUploadService } from './image-upload.service.js';
 import { TagsController } from './tags.controller.js';
 import { TagsService } from './tags.service.js';
+import { ReviewsController } from './reviews.controller.js';
 
 /**
  * Products Module — quản lý sản phẩm, variants, tags, upload ảnh
@@ -19,7 +20,7 @@ import { TagsService } from './tags.service.js';
       limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
     }),
   ],
-  controllers: [ProductsController, TagsController],
+  controllers: [ProductsController, TagsController, ReviewsController],
   providers: [ProductsService, ImageUploadService, TagsService],
   exports: [ProductsService],
 })

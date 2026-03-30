@@ -116,6 +116,33 @@ export class RedisService implements OnModuleDestroy {
     return result;
   }
 
+  // === Hash operations — dùng cho Guest Cart ===
+
+  /** Lấy 1 field từ Hash */
+  async hget(key: string, field: string): Promise<string | null> {
+    return this.client.hget(key, field);
+  }
+
+  /** Set 1 field trong Hash */
+  async hset(key: string, field: string, value: string): Promise<void> {
+    await this.client.hset(key, field, value);
+  }
+
+  /** Xóa 1 field trong Hash */
+  async hdel(key: string, field: string): Promise<void> {
+    await this.client.hdel(key, field);
+  }
+
+  /** Lấy tất cả fields trong Hash */
+  async hgetall(key: string): Promise<Record<string, string>> {
+    return this.client.hgetall(key);
+  }
+
+  /** Set TTL cho key */
+  async expire(key: string, ttlSeconds: number): Promise<void> {
+    await this.client.expire(key, ttlSeconds);
+  }
+
   /** Kiểm tra kết nối Redis */
   async ping(): Promise<boolean> {
     try {
