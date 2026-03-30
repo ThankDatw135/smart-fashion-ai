@@ -38,7 +38,19 @@ class Settings(BaseSettings):
     CHAT_MAX_MESSAGES: int = 50
     CHAT_CONTEXT_MAX_TOKENS: int = 8000
     CHAT_RATE_LIMIT: int = 20  # msgs/min/user
-    
+
+    # Search
+    SEARCH_CACHE_TTL: int = 300  # 5 phút
+    SEARCH_MAX_RESULTS: int = 20
+    SEARCH_SUGGEST_LIMIT: int = 5
+
+    # Recommendation
+    RECOMMENDATION_CACHE_TTL: int = 86400  # 24 giờ
+    RECOMMENDATION_RETRAIN_HOUR: int = 2  # 2AM
+
+    # Celery
+    CELERY_BROKER_URL: str = "redis://:smartfashion_redis@localhost:6379/2"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

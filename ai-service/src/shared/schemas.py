@@ -33,6 +33,7 @@ class HealthResponse(BaseModel):
     uptime_seconds: float = 0.0
     connections: ConnectionStatus = ConnectionStatus()
     knowledge_base: KnowledgeStatus = KnowledgeStatus()
+    embedding_model: str = "not_loaded"  # "ready" | "not_loaded"
 
 
 # ─── Error Response (RFC 7807) ───

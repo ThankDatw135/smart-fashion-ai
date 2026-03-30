@@ -25,6 +25,12 @@ from src.shared.schemas import HealthResponse, ConnectionStatus, KnowledgeStatus
 from src.knowledge.loader import knowledge_base
 from src.chatbot.router import router as chat_router
 
+# Phase 8: AI Search, Recommendation, Behavior Analytics
+from src.search.search_router import router as search_router
+from src.recommendation.recommendation_router import router as recommendation_router
+from src.behavior.behavior_router import router as behavior_router
+from src.search.embedding_service import embedding_service
+
 # Cấu hình logging
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -78,6 +84,49 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"❌ Knowledge Base: Load thất bại — {e}")
 
+    # 5. Phase 8: Warmup Embedding Model (~30s lần đầu)
+    try:
+        await embedding_service.warmup()
+        logger.info("✅ Embedding Model: Đã sẵn sàng")
+    except Exception as e:
+        logger.error(f"⚠️ Embedding Model: Warmup thất bại (search vẫn dùng SQL) — {e}")
+
+    # 6. Phase 8: Tạo bảng search_logs (Phương án A — AI Service tự quản lý)
+    try:
+        from src.shared.database import async_session_maker
+        from sqlalchemy import text as sa_text
+        async with async_session_maker() as db:
+            await db.execute(sa_text("""
+                CREATE TABLE IF NOT EXISTS search_logs (
+                    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                    keyword VARCHAR(255) NOT NULL,
+                    results_count INT DEFAULT 0,
+                    user_id UUID,
+                    session_id VARCHAR(100),
+                    created_at TIMESTAMP DEFAULT NOW()
+                )
+            """))
+            await db.execute(sa_text("""
+                CREATE INDEX IF NOT EXISTS idx_search_logs_keyword ON search_logs(keyword)
+            """))
+            await db.execute(sa_text("""
+                CREATE INDEX IF NOT EXISTS idx_search_logs_created ON search_logs(created_at)
+            """))
+            await db.commit()
+        logger.info("✅ Search Logs: Bảng đã sẵn sàng")
+    except Exception as e:
+        logger.error(f"⚠️ Search Logs: Tạo bảng thất bại — {e}")
+
+    # 7. Phase 8: Đăng ký RabbitMQ Consumers
+    try:
+        from src.search.product_consumer import start_product_consumer
+        from src.behavior.behavior_consumer import start_behavior_consumer
+        await start_product_consumer()
+        await start_behavior_consumer()
+        logger.info("✅ RabbitMQ Consumers: product_events + behavior_events")
+    except Exception as e:
+        logger.error(f"⚠️ RabbitMQ Consumers: Đăng ký thất bại — {e}")
+
     logger.info(f"🎉 AI Service đã sẵn sàng tại http://{settings.HOST}:{settings.PORT}")
     logger.info(f"📖 Swagger UI: http://localhost:{settings.PORT}/docs")
 
@@ -123,6 +172,9 @@ app.add_exception_handler(Exception, generic_error_handler)
 # ─── Routers ───
 
 app.include_router(chat_router)
+app.include_router(search_router)
+app.include_router(recommendation_router)
+app.include_router(behavior_router)
 
 
 # ─── Health Check ───
@@ -154,6 +206,9 @@ async def health_check():
     # Trạng thái tổng thể: OK nếu ít nhất DB kết nối được
     overall_status = "ok" if db_ok else "degraded"
 
+    # Phase 8: Thêm trạng thái embedding model
+    embedding_status = "ready" if embedding_service.is_ready else "not_loaded"
+
     return HealthResponse(
         status=overall_status,
         service="ai-service",
@@ -161,6 +216,7 @@ async def health_check():
         uptime_seconds=round(time.time() - _start_time, 1),
         connections=connections,
         knowledge_base=knowledge_status,
+        embedding_model=embedding_status,
     )
 
 

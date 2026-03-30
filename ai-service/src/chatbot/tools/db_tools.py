@@ -44,48 +44,17 @@ async def search_products(
         Danh sách sản phẩm dạng JSON string (tối đa 5 sản phẩm)
     """
     try:
-        # Bước 1: Mở rộng query bằng synonym vocabulary
-        corrected_query = knowledge_base.correct_typo(query)
-        synonyms = knowledge_base.get_synonyms(corrected_query)
-        search_terms = [corrected_query] + synonyms
+        # Phase 8: Sử dụng Hybrid Search (SQL + pgvector)
+        from src.search.search_service import full_search
 
-        # Bước 2: Xây dựng SQL LIKE query (Phase 7 — sẽ nâng cấp pgvector ở Phase 8)
-        like_conditions = []
-        params = {"min_price": min_price, "max_price": max_price}
+        result = await full_search(
+            raw_query=query,
+            min_price=min_price,
+            max_price=max_price,
+            limit=5,  # Chatbot chỉ cần top 5
+        )
 
-        for i, term in enumerate(search_terms[:5]):  # Giới hạn 5 từ đồng nghĩa
-            param_key = f"term_{i}"
-            like_conditions.append(
-                f"(LOWER(p.name) LIKE :{param_key} OR LOWER(p.description) LIKE :{param_key})"
-            )
-            params[param_key] = f"%{term.lower()}%"
-
-        where_clause = " OR ".join(like_conditions) if like_conditions else "1=0"
-
-        sql = text(f"""
-            SELECT
-                p.id,
-                p.name,
-                p.slug,
-                p.description,
-                p.base_price as price,
-                p.sale_price,
-                p.avg_rating,
-                p.sold_count
-            FROM products p
-            WHERE p.is_active = true
-              AND ({where_clause})
-              AND p.base_price >= :min_price
-              AND p.base_price <= :max_price
-            ORDER BY p.sold_count DESC, p.avg_rating DESC
-            LIMIT 5
-        """)
-
-        async with async_session_maker() as db:
-            result = await db.execute(sql, params)
-            rows = result.mappings().all()
-
-        if not rows:
+        if not result.results:
             return json.dumps({
                 "found": False,
                 "query": query,
@@ -94,15 +63,15 @@ async def search_products(
             }, ensure_ascii=False)
 
         products = []
-        for row in rows:
+        for item in result.results:
             products.append({
-                "id": str(row["id"]),
-                "name": row["name"],
-                "slug": row["slug"],
-                "price": int(row["price"]) if row["price"] else 0,
-                "sale_price": int(row["sale_price"]) if row["sale_price"] else None,
-                "rating": float(row["avg_rating"]) if row["avg_rating"] else 0,
-                "sold": int(row["sold_count"]) if row["sold_count"] else 0,
+                "id": item.id,
+                "name": item.name,
+                "slug": item.slug,
+                "price": item.price,
+                "sale_price": item.sale_price,
+                "rating": item.rating,
+                "sold": item.sold,
             })
 
         return json.dumps({
