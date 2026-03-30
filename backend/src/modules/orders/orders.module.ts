@@ -8,10 +8,11 @@ import {
 } from './orders.controller.js';
 import { OrdersService } from './orders.service.js';
 import { NotificationsModule } from '../notifications/notifications.module.js';
+import { VipModule } from '../vip/vip.module.js';
 
 /**
  * Orders Module — checkout flow + quản lý đơn hàng
- * Import NotificationsModule để gửi email + notify admin
+ * Import NotificationsModule, VipModule
  */
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { NotificationsModule } from '../notifications/notifications.module.js';
       { name: QUEUE_NAMES.ORDER_PROCESS },
     ),
     NotificationsModule,
+    VipModule,
   ],
   controllers: [
     CheckoutController,

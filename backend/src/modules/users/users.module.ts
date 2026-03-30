@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, resolve } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { UsersController } from './users.controller.js';
 import { UsersService } from './users.service.js';
@@ -14,7 +14,8 @@ import { UsersService } from './users.service.js';
   imports: [
     MulterModule.register({
       storage: diskStorage({
-        destination: './uploads/avatars',
+        // Ghi chú: Dùng chung folder uploads/ ở root monorepo
+        destination: resolve(process.cwd(), '..', 'uploads', 'avatars'),
         filename: (_req, file, cb) => {
           // Tạo tên file duy nhất: UUID + extension gốc
           const ext = extname(file.originalname);

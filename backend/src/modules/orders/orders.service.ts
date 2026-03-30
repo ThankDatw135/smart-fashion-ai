@@ -5,6 +5,7 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { Prisma, OrderStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -37,6 +38,7 @@ import {
   buildPaginationResponse,
 } from '../../common/utils/pagination.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { VipService } from '../vip/vip.service.js';
 
 // Ghi chú: Phí ship cố định theo 3 vùng (quyết định kỹ thuật đã chốt)
 const SHIPPING_FEES: Record<string, number> = {
@@ -55,10 +57,11 @@ const DEFAULT_SHIPPING_FEE = 50000; // Vùng 3: Tỉnh khác — 50.000đ
 // Ghi chú: Checkout session TTL = 15 phút
 const CHECKOUT_TTL = 15 * 60;
 
-// Ghi chú: Valid order status transitions
+// Ghi chú: Valid order status transitions (theo tài liệu Phase 05)
 const VALID_TRANSITIONS: Record<string, string[]> = {
   pending: ['confirmed', 'cancelled'],
-  confirmed: ['shipping', 'cancelled'],
+  confirmed: ['preparing', 'cancelled'],
+  preparing: ['shipping', 'cancelled'],
   shipping: ['delivered'],
   delivered: ['completed'],
   completed: [],
@@ -84,6 +87,7 @@ export class OrdersService {
     @InjectQueue(QUEUE_NAMES.ORDER_PROCESS)
     private readonly orderQueue: Queue,
     private readonly notifications: NotificationsService,
+    private readonly vipService: VipService,
   ) {}
 
   // ===========================================================================
@@ -807,6 +811,20 @@ export class OrdersService {
       }
     });
 
+    // Nếu completed → VIP auto-upgrade
+    if (dto.status === 'completed') {
+      const fullOrder = await this.prisma.order.findUnique({
+        where: { id: orderId },
+        select: { userId: true, total: true },
+      });
+      if (fullOrder?.userId) {
+        await this.vipService.processOrderCompleted(
+          fullOrder.userId,
+          Number(fullOrder.total),
+        );
+      }
+    }
+
     // Publish event
     await this.rabbitmq.publish(
       'sf.order.events',
@@ -824,6 +842,167 @@ export class OrdersService {
     );
 
     return this.getAdminOrderDetail(orderId);
+  }
+
+  // ===========================================================================
+  // USER CANCEL ORDER
+  // ===========================================================================
+
+  /**
+   * User hủy đơn hàng
+   * Chỉ cho phép ở trạng thái: pending, confirmed, preparing
+   */
+  async cancelOrder(orderId: string, userId: string, reason?: string) {
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, userId },
+      include: {
+        items: true,
+        voucher: true,
+      },
+    });
+
+    if (!order) throw new NotFoundException(ORDER_NOT_FOUND);
+
+    // Chỉ cho phép hủy ở 3 trạng thái đầu
+    const cancellableStatuses: OrderStatus[] = [
+      'pending',
+      'confirmed',
+      'preparing',
+    ];
+    if (!cancellableStatuses.includes(order.status)) {
+      throw new BadRequestException(
+        'Không thể hủy đơn hàng ở trạng thái hiện tại. Vui lòng liên hệ CSKH.',
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Update trạng thái cancelled
+      await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: 'cancelled',
+          cancelledBy: 'user',
+          cancelReason: reason || 'User hủy đơn',
+        },
+      });
+
+      // 2. Log status history
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId,
+          status: 'cancelled',
+          note: reason || 'User hủy đơn',
+          changedBy: userId,
+        },
+      });
+
+      // 3. Restore stock
+      for (const item of order.items) {
+        await tx.productVariant.update({
+          where: { id: item.variantId },
+          data: { stockQuantity: { increment: item.quantity } },
+        });
+      }
+
+      // 4. Release voucher (nếu có)
+      if (order.voucherId) {
+        await tx.voucher.update({
+          where: { id: order.voucherId },
+          data: { usedCount: { decrement: 1 } },
+        });
+        await tx.userVoucher.updateMany({
+          where: { userId, voucherId: order.voucherId },
+          data: { isUsed: false, usedAt: null },
+        });
+      }
+    });
+
+    // 5. Notify admin
+    const admins = await this.prisma.user.findMany({
+      where: { role: { in: ['admin', 'super_admin'] } },
+      select: { id: true },
+    });
+    if (admins.length > 0) {
+      await this.prisma.notification.createMany({
+        data: admins.map((admin) => ({
+          userId: admin.id,
+          type: 'order_update' as const,
+          title: `❌ Đơn ${order.orderNumber} bị hủy bởi khách`,
+          message: reason || 'Khách hàng hủy đơn',
+          data: { orderId, orderNumber: order.orderNumber },
+          channel: 'in_app' as const,
+        })),
+      });
+    }
+
+    this.logger.log(
+      `User hủy đơn ${order.orderNumber}: ${reason || 'Không rõ lý do'}`,
+    );
+
+    return { message: 'Đã hủy đơn hàng thành công' };
+  }
+
+  // ===========================================================================
+  // CRON: AUTO-COMPLETE ORDERS
+  // ===========================================================================
+
+  /**
+   * Tự động chuyển đơn delivered → completed sau 3 ngày
+   * Chạy mỗi ngày lúc 2:00 AM
+   */
+  @Cron('0 2 * * *', { name: 'auto-complete-orders' })
+  async autoCompleteOrders() {
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+    // Tìm đơn delivered quá 3 ngày
+    const orders = await this.prisma.order.findMany({
+      where: {
+        status: 'delivered',
+        updatedAt: { lt: threeDaysAgo },
+      },
+      select: { id: true, userId: true, total: true, orderNumber: true },
+    });
+
+    if (orders.length === 0) return;
+
+    this.logger.log(
+      `⏰ Auto-complete: Tìm thấy ${orders.length} đơn hàng delivered > 3 ngày`,
+    );
+
+    for (const order of orders) {
+      try {
+        // Update status
+        await this.prisma.$transaction(async (tx) => {
+          await tx.order.update({
+            where: { id: order.id },
+            data: { status: 'completed' },
+          });
+
+          await tx.orderStatusHistory.create({
+            data: {
+              orderId: order.id,
+              status: 'completed',
+              note: 'Hệ thống tự động đánh dấu hoàn thành (sau 3 ngày giao hàng)',
+            },
+          });
+        });
+
+        // VIP auto-upgrade
+        if (order.userId) {
+          await this.vipService.processOrderCompleted(
+            order.userId,
+            Number(order.total),
+          );
+        }
+
+        this.logger.log(`✅ Auto-completed: ${order.orderNumber}`);
+      } catch (error) {
+        this.logger.error(
+          `Auto-complete thất bại cho ${order.orderNumber}: ${(error as Error).message}`,
+        );
+      }
+    }
   }
 
   // ===========================================================================

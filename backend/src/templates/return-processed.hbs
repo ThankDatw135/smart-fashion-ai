@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; }
+    .header-approved { background: linear-gradient(135deg, #4CAF50, #2E7D32); padding: 30px; text-align: center; color: white; }
+    .header-rejected { background: linear-gradient(135deg, #f44336, #c62828); padding: 30px; text-align: center; color: white; }
+    .header-approved h1, .header-rejected h1 { margin: 0; font-size: 24px; }
+    .content { padding: 30px; }
+    .info-box { background: #f8f9fa; border-left: 4px solid #1976D2; padding: 15px; border-radius: 4px; margin: 15px 0; }
+    .refund-box { background: #e8f5e9; border: 2px dashed #4CAF50; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }
+    .refund-amount { font-size: 28px; font-weight: bold; color: #2E7D32; }
+    .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    {{#ifEquals decision "approved"}}
+    <div class="header-approved">
+      <h1>✅ Yêu cầu đổi/trả đã được duyệt</h1>
+    </div>
+    {{else}}
+    <div class="header-rejected">
+      <h1>❌ Yêu cầu đổi/trả bị từ chối</h1>
+    </div>
+    {{/ifEquals}}
+
+    <div class="content">
+      <p>Xin chào <strong>{{fullName}}</strong>,</p>
+
+      <div class="info-box">
+        <p><strong>Đơn hàng:</strong> #{{orderNumber}}</p>
+        {{#ifEquals decision "approved"}}
+        <p><strong>Trạng thái:</strong> ✅ Đã duyệt</p>
+        {{else}}
+        <p><strong>Trạng thái:</strong> ❌ Bị từ chối</p>
+        {{/ifEquals}}
+      </div>
+
+      {{#if adminNote}}
+      <h3>📝 Ghi chú từ Admin:</h3>
+      <p style="background: #fff3e0; padding: 12px; border-radius: 6px;">{{adminNote}}</p>
+      {{/if}}
+
+      {{#ifEquals decision "approved"}}
+        {{#if refundAmount}}
+        <div class="refund-box">
+          <p>Số tiền hoàn trả:</p>
+          <p class="refund-amount">{{refundAmount}}đ</p>
+          <p style="color: #666; font-size: 13px;">Hoàn tiền sẽ được xử lý trong 3-5 ngày làm việc</p>
+        </div>
+        {{/if}}
+        <p>Chúng tôi sẽ liên hệ hướng dẫn bạn gửi lại sản phẩm. Vui lòng kiểm tra email thường xuyên.</p>
+      {{else}}
+        <p>Nếu bạn có thắc mắc, vui lòng liên hệ bộ phận chăm sóc khách hàng qua email hoặc hotline.</p>
+      {{/ifEquals}}
+    </div>
+
+    <div class="footer">
+      <p>Smart Fashion AI — Thời trang thông minh</p>
+      <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+    </div>
+  </div>
+</body>
+</html>

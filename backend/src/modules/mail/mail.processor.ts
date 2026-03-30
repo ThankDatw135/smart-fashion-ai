@@ -7,6 +7,7 @@ import * as Handlebars from 'handlebars';
 import * as fs from 'fs';
 import * as path from 'path';
 import { QUEUE_NAMES } from '../../common/constants/queue-names.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
 
 /**
  * Mail Processor — BullMQ worker xử lý gửi email
@@ -18,7 +19,10 @@ export class MailProcessor extends WorkerHost {
   private readonly transporter: nodemailer.Transporter;
   private readonly templates = new Map<string, Handlebars.TemplateDelegate>();
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     super();
 
     // Khởi tạo Nodemailer SMTP transporter
@@ -63,6 +67,18 @@ export class MailProcessor extends WorkerHost {
 
         case 'send-low-stock-alert':
           await this.sendLowStockAlertEmail(data);
+          break;
+
+        case 'send-vip-upgrade':
+          await this.sendVipUpgradeEmail(data);
+          break;
+
+        case 'update-product-rating':
+          await this.updateProductRating(data.productId as string);
+          break;
+
+        case 'send-return-processed':
+          await this.sendReturnProcessedEmail(data);
           break;
 
         default:
@@ -244,6 +260,8 @@ export class MailProcessor extends WorkerHost {
       'reset-password',
       'order-confirmation',
       'low-stock-alert',
+      'vip-upgrade',
+      'return-processed',
     ];
 
     for (const name of templateFiles) {
@@ -263,5 +281,100 @@ export class MailProcessor extends WorkerHost {
         );
       }
     }
+  }
+
+  /**
+   * Gửi email chúc mừng lên VIP
+   */
+  private async sendVipUpgradeEmail(data: {
+    email: string;
+    fullName: string;
+    tierLabel: string;
+    percent: number;
+    maxDiscount: string;
+  }) {
+    const template = this.templates.get('vip-upgrade');
+    if (!template) {
+      this.logger.error('Template vip-upgrade không tìm thấy');
+      return;
+    }
+
+    const html = template(data);
+
+    await this.transporter.sendMail({
+      from: this.configService.get<string>(
+        'mail.from',
+        'noreply@smartfashion.vn',
+      ),
+      to: data.email,
+      subject: `🎉 Chúc mừng bạn lên VIP ${data.tierLabel}!`,
+      html,
+    });
+
+    this.logger.log(
+      `✅ Email VIP upgrade đã gửi: ${data.email} → ${data.tierLabel}`,
+    );
+  }
+
+  /**
+   * Update avgRating + reviewCount cho sản phẩm
+   * Gọi từ Reviews Service qua BullMQ
+   */
+  private async updateProductRating(productId: string) {
+    const stats = await this.prisma.review.aggregate({
+      where: { productId },
+      _avg: { rating: true },
+      _count: { rating: true },
+    });
+
+    await this.prisma.product.update({
+      where: { id: productId },
+      data: {
+        avgRating: stats._avg.rating ?? 0,
+        reviewCount: stats._count.rating,
+      },
+    });
+
+    this.logger.log(
+      `⭐ Rating updated: productId=${productId}, avg=${stats._avg.rating}, count=${stats._count.rating}`,
+    );
+  }
+
+  /**
+   * Gửi email thông báo kết quả xử lý đổi/trả hàng
+   */
+  private async sendReturnProcessedEmail(data: {
+    email: string;
+    fullName: string;
+    orderNumber: string;
+    decision: 'approved' | 'rejected';
+    adminNote: string;
+    refundAmount: number;
+  }) {
+    const template = this.templates.get('return-processed');
+    if (!template) {
+      this.logger.warn('Template return-processed không tìm thấy, gửi email text');
+      // Fallback: gửi email text thuần
+      const statusText = data.decision === 'approved' ? 'ĐÃ DUYỆT' : 'BỊ TỪ CHỐI';
+      await this.transporter.sendMail({
+        from: this.configService.get<string>('mail.from', 'noreply@smartfashion.vn'),
+        to: data.email,
+        subject: `📦 Yêu cầu đổi/trả hàng ${statusText} — #${data.orderNumber}`,
+        text: `Xin chào ${data.fullName},\n\nYêu cầu đổi/trả hàng cho đơn #${data.orderNumber} đã ${statusText}.\n${data.adminNote ? `Ghi chú: ${data.adminNote}` : ''}\n${data.refundAmount > 0 ? `Số tiền hoàn: ${data.refundAmount.toLocaleString('vi-VN')}đ` : ''}\n\nTrân trọng,\nSmart Fashion AI`,
+      });
+      return;
+    }
+
+    const html = template(data);
+    const statusText = data.decision === 'approved' ? 'ĐÃ DUYỆT' : 'BỊ TỪ CHỐI';
+
+    await this.transporter.sendMail({
+      from: this.configService.get<string>('mail.from', 'noreply@smartfashion.vn'),
+      to: data.email,
+      subject: `📦 Yêu cầu đổi/trả hàng ${statusText} — #${data.orderNumber}`,
+      html,
+    });
+
+    this.logger.log(`✅ Email return processed đã gửi: ${data.email} → ${data.decision}`);
   }
 }

@@ -127,6 +127,17 @@ export class UserOrdersController {
   ) {
     return this.ordersService.getUserOrderDetail(req.user.id, orderId);
   }
+
+  @Post(':id/cancel')
+  @ApiOperation({ summary: 'Hủy đơn hàng (User)' })
+  @ApiResponse({ status: 200, description: 'Đã hủy đơn hàng' })
+  cancelOrder(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) orderId: string,
+    @Body() body: { reason?: string },
+  ) {
+    return this.ordersService.cancelOrder(orderId, req.user.id, body.reason);
+  }
 }
 
 // =============================================================================

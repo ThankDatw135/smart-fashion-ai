@@ -38,6 +38,14 @@ import { CartModule } from './modules/cart/cart.module.js';
 import { OrdersModule } from './modules/orders/orders.module.js';
 import { PaymentsModule } from './modules/payments/payments.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
+import { VipModule } from './modules/vip/vip.module.js';
+import { VouchersModule } from './modules/vouchers/vouchers.module.js';
+import { ReviewsModule } from './modules/reviews/reviews.module.js';
+import { WishlistModule } from './modules/wishlist/wishlist.module.js';
+import { BlogModule } from './modules/blog/blog.module.js';
+import { BannersModule } from './modules/banners/banners.module.js';
+import { ReturnsModule } from './modules/returns/returns.module.js';
+import { AnalyticsModule } from './modules/analytics/analytics.module.js';
 
 @Module({
   imports: [
@@ -87,6 +95,14 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     OrdersModule, // Phase 4: Checkout flow + Quản lý đơn hàng
     PaymentsModule, // Phase 4: COD, MoMo, Chuyển khoản
     NotificationsModule, // Phase 4: Low stock alert + Admin notify
+    VipModule, // Phase 5: Hệ thống VIP tự động
+    VouchersModule, // Phase 5: Quản lý voucher (Admin CRUD + Public check)
+    ReviewsModule, // Phase 5: Đánh giá sản phẩm
+    WishlistModule, // Phase 5: Danh sách yêu thích
+    BlogModule, // Phase 5: Hệ thống blog
+    BannersModule, // Phase 5: Banner trang chủ
+    ReturnsModule, // Phase 5: Đổi/trả hàng
+    AnalyticsModule, // Phase 5: Admin Dashboard KPI
   ],
   providers: [
     // Throttler bảo vệ toàn bộ endpoints
