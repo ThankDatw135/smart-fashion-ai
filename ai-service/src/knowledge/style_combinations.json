@@ -11,6 +11,16 @@
       "color_harmony": "Trắng + xanh denim + trắng = hài hòa, sáng sủa"
     },
     {
+      "id": 11,
+      "name": "Date Night Nam",
+      "items": ["áo polo/sơ mi slim fit", "quần chinos/khaki", "giày lười da", "đồng hồ", "nước hoa"],
+      "occasion": ["hẹn hò", "dinner", "đi ăn nhà hàng", "đi bar"],
+      "style": "smart_casual",
+      "gender": "male",
+      "tips": "Áo polo hoặc sơ mi không quá formal. Chinos tối màu (navy/đen) tạo cảm giác gọn gàng. Xịt nước hoa nhẹ.",
+      "color_harmony": "Navy/trắng + chinos tối + nâu = lịch sự nhưng không gượng"
+    },
+    {
       "id": 2,
       "name": "Office Lịch Sự Nam",
       "items": ["áo sơ mi trắng/xanh nhạt", "quần âu xám/đen", "giày tây nâu/đen", "thắt lưng da"],

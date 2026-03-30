@@ -202,16 +202,55 @@ class KnowledgeBase:
 
     # ─── Gợi ý outfit ───
 
+    # Ánh xạ occasion tiếng Anh → từ khóa tiếng Việt (dùng cho fuzzy match)
+    _OCCASION_MAPPING = {
+        "date": ["hẹn hò", "dinner", "date", "ăn nhà hàng"],
+        "office": ["đi làm", "họp", "phỏng vấn", "office", "công sở"],
+        "casual": ["đi chơi", "cuối tuần", "cafe", "casual", "dạo phố"],
+        "party": ["party", "tiệc", "concert", "dự tiệc", "club"],
+        "travel": ["du lịch", "đi biển", "travel", "picnic", "chụp ảnh"],
+        "sport": ["thể thao", "gym", "chạy bộ", "sport", "tập"],
+        "streetwear": ["streetwear", "cool", "dạo phố"],
+    }
+
     def get_style_combos(self, occasion: str | None = None, gender: str | None = None) -> list[dict]:
         """
         Lấy danh sách outfit combinations, có thể lọc theo occasion và gender.
+
+        Hỗ trợ fuzzy matching: "date" sẽ match cả "hẹn hò", "dinner".
         """
         combos_data = self._data.get("style_combinations", {})
         combos = combos_data.get("combinations", [])
 
         results = combos
+
         if occasion:
-            results = [c for c in results if occasion.lower() in [o.lower() for o in c.get("occasion", [])]]
+            occasion_lower = occasion.lower().strip()
+
+            # Mở rộng search terms bằng mapping
+            search_terms = [occasion_lower]
+            for key, aliases in self._OCCASION_MAPPING.items():
+                if occasion_lower == key or occasion_lower in aliases:
+                    search_terms.extend(aliases)
+                    search_terms.append(key)
+            search_terms = list(set(search_terms))
+
+            # Fuzzy match: substring trong occasion tags HOẶC trong tên combo
+            filtered = []
+            for c in results:
+                tags = [o.lower() for o in c.get("occasion", [])]
+                combo_name = c.get("name", "").lower()
+
+                matched = any(
+                    term in tag or tag in term
+                    for term in search_terms
+                    for tag in tags
+                ) or any(term in combo_name for term in search_terms)
+
+                if matched:
+                    filtered.append(c)
+            results = filtered
+
         if gender:
             results = [c for c in results if c.get("gender", "unisex") in [gender, "unisex"]]
 
