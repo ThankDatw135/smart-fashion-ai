@@ -199,7 +199,9 @@ export class ReturnsService {
     const request = await this.prisma.returnRequest.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, fullName: true, email: true, phone: true } },
+        user: {
+          select: { id: true, fullName: true, email: true, phone: true },
+        },
         order: {
           include: {
             items: {
@@ -242,31 +244,34 @@ export class ReturnsService {
       throw new BadRequestException('Yêu cầu này đã được xử lý');
     }
 
-    const newStatus = dto.decision === 'approved'
-      ? PrismaReturnStatus.approved
-      : PrismaReturnStatus.rejected;
+    const newStatus =
+      dto.decision === 'approved'
+        ? PrismaReturnStatus.approved
+        : PrismaReturnStatus.rejected;
 
     const updated = await this.prisma.returnRequest.update({
       where: { id },
       data: {
         status: newStatus,
         adminNote: dto.adminNote ?? null,
-        refundAmount: dto.decision === 'approved'
-          ? (dto.refundAmount ?? null)
-          : null,
+        refundAmount:
+          dto.decision === 'approved' ? (dto.refundAmount ?? null) : null,
         processedBy: adminId,
       },
     });
 
     // Notify user
-    const statusText = dto.decision === 'approved' ? '✅ Đã duyệt' : '❌ Bị từ chối';
+    const statusText =
+      dto.decision === 'approved' ? '✅ Đã duyệt' : '❌ Bị từ chối';
 
     await this.prisma.notification.create({
       data: {
         userId: request.userId,
         type: 'system',
         title: `${statusText}: Yêu cầu đổi/trả #${request.order.orderNumber}`,
-        message: dto.adminNote || `Yêu cầu đổi/trả của bạn đã ${dto.decision === 'approved' ? 'được duyệt' : 'bị từ chối'}`,
+        message:
+          dto.adminNote ||
+          `Yêu cầu đổi/trả của bạn đã ${dto.decision === 'approved' ? 'được duyệt' : 'bị từ chối'}`,
         data: { returnId: id, decision: dto.decision },
         channel: 'in_app',
       },

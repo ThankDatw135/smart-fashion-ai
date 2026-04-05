@@ -122,9 +122,7 @@ export class PaymentsService {
     //   body: JSON.stringify(requestBody),
     // });
 
-    this.logger.log(
-      `MoMo payment request tạo cho đơn: ${order.orderNumber}`,
-    );
+    this.logger.log(`MoMo payment request tạo cho đơn: ${order.orderNumber}`);
 
     return {
       requestBody,
@@ -187,10 +185,7 @@ export class PaymentsService {
     }
 
     // 3. Kiểm tra đã xử lý chưa
-    if (
-      order.payment &&
-      order.payment.status !== 'pending'
-    ) {
+    if (order.payment && order.payment.status !== 'pending') {
       this.logger.warn(`MoMo IPN already processed: ${dto.orderId}`);
       throw new BadRequestException(PAYMENT_ALREADY_PROCESSED);
     }
@@ -246,7 +241,10 @@ export class PaymentsService {
 
         await tx.order.update({
           where: { id: order.id },
-          data: { status: 'cancelled', cancelReason: `MoMo failed: ${dto.message}` },
+          data: {
+            status: 'cancelled',
+            cancelReason: `MoMo failed: ${dto.message}`,
+          },
         });
       });
 
@@ -281,11 +279,7 @@ export class PaymentsService {
   /**
    * Admin xác nhận đã nhận chuyển khoản
    */
-  async confirmBankTransfer(
-    orderId: string,
-    adminId: string,
-    note?: string,
-  ) {
+  async confirmBankTransfer(orderId: string, adminId: string, note?: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: { payment: true },

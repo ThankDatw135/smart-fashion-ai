@@ -177,6 +177,69 @@ export class VouchersService {
   // ===========================================================================
 
   /**
+   * Lấy danh sách voucher đang active (Public)
+   */
+  async findActivePublic() {
+    return this.prisma.voucher.findMany({
+      where: {
+        isActive: true,
+        endDate: { gt: new Date() },
+      },
+      orderBy: { endDate: 'asc' },
+    });
+  }
+
+  /**
+   * Lấy danh sách voucher user đã lưu (Customer)
+   */
+  async findMyVouchers(userId: string) {
+    return this.prisma.userVoucher.findMany({
+      where: { userId },
+      include: {
+        voucher: true,
+      },
+      orderBy: { claimedAt: 'desc' },
+    });
+  }
+
+  /**
+   * Lưu mã giảm giá vào ví (Customer)
+   */
+  async collectVoucher(userId: string, voucherId: string) {
+    const voucher = await this.prisma.voucher.findUnique({
+      where: { id: voucherId },
+    });
+
+    if (!voucher) {
+      throw new NotFoundException('Voucher không tồn tại');
+    }
+
+    if (!voucher.isActive || new Date() > voucher.endDate) {
+      throw new BadRequestException('Voucher đã hết hạn hoặc không hoạt động');
+    }
+
+    const existing = await this.prisma.userVoucher.findUnique({
+      where: {
+        userId_voucherId: { userId, voucherId },
+      },
+    });
+
+    if (existing) {
+      throw new ConflictException('Bạn đã lưu voucher này rồi');
+    }
+
+    return this.prisma.userVoucher.create({
+      data: {
+        userId,
+        voucherId,
+      },
+      include: {
+        voucher: true,
+      },
+    });
+  }
+
+  /**
    * Kiểm tra voucher hợp lệ — dùng cho checkout preview
    */
   async checkVoucher(code: string, userId?: string) {

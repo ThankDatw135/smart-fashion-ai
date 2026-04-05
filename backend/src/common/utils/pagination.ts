@@ -19,9 +19,8 @@ export function buildPaginationResponse<T extends { id: string }>(
 ) {
   const hasMore = items.length > limit;
   const data = hasMore ? items.slice(0, limit) : items;
-  const nextCursor = hasMore && data.length > 0
-    ? encodeCursor(data[data.length - 1].id)
-    : null;
+  const nextCursor =
+    hasMore && data.length > 0 ? encodeCursor(data[data.length - 1].id) : null;
 
   return {
     data,

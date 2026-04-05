@@ -40,12 +40,7 @@ export class BlogService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
   ) {
-    this.uploadDir = path.resolve(
-      process.cwd(),
-      '..',
-      'uploads',
-      'blog',
-    );
+    this.uploadDir = path.resolve(process.cwd(), '..', 'uploads', 'blog');
     this.ensureDir(this.uploadDir);
   }
 
@@ -217,9 +212,7 @@ export class BlogService {
 
     // Invalidate cache
     await this.redis.del(`${BLOG_CACHE_PREFIX}:list`);
-    await this.redis.del(
-      `${BLOG_CACHE_PREFIX}:post:${existing.slug}`,
-    );
+    await this.redis.del(`${BLOG_CACHE_PREFIX}:post:${existing.slug}`);
 
     this.logger.log(`Blog updated: "${post.title}"`);
     return post;
@@ -246,9 +239,7 @@ export class BlogService {
       where: { slug },
     });
     if (existing) {
-      throw new ConflictException(
-        `Danh mục blog "${dto.name}" đã tồn tại`,
-      );
+      throw new ConflictException(`Danh mục blog "${dto.name}" đã tồn tại`);
     }
 
     return this.prisma.blogCategory.create({
@@ -430,9 +421,7 @@ export class BlogService {
   /**
    * Upload + resize thumbnail (WebP, 800x450)
    */
-  private async uploadThumbnail(
-    file: Express.Multer.File,
-  ): Promise<string> {
+  private async uploadThumbnail(file: Express.Multer.File): Promise<string> {
     const hash = crypto.randomBytes(8).toString('hex');
     const filename = `${Date.now()}-${hash}.webp`;
     const filepath = path.join(this.uploadDir, filename);

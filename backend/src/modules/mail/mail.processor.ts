@@ -85,7 +85,10 @@ export class MailProcessor extends WorkerHost {
           this.logger.warn(`Job mail không xác định: ${name}`);
       }
     } catch (error) {
-      this.logger.error(`Lỗi gửi mail: ${name} → ${data.email}`, (error as Error).stack);
+      this.logger.error(
+        `Lỗi gửi mail: ${name} → ${data.email}`,
+        (error as Error).stack,
+      );
       throw error; // Retry theo cấu hình BullMQ
     }
   }
@@ -98,10 +101,12 @@ export class MailProcessor extends WorkerHost {
     otp: string,
     type: 'verify-email' | 'reset-password',
   ) {
-    const templateName = type === 'verify-email' ? 'verify-email' : 'reset-password';
-    const subject = type === 'verify-email'
-      ? '🔐 Xác minh email — Smart Fashion AI'
-      : '🔒 Đặt lại mật khẩu — Smart Fashion AI';
+    const templateName =
+      type === 'verify-email' ? 'verify-email' : 'reset-password';
+    const subject =
+      type === 'verify-email'
+        ? '🔐 Xác minh email — Smart Fashion AI'
+        : '🔒 Đặt lại mật khẩu — Smart Fashion AI';
 
     const template = this.templates.get(templateName);
     if (!template) {
@@ -116,7 +121,10 @@ export class MailProcessor extends WorkerHost {
     });
 
     await this.transporter.sendMail({
-      from: this.configService.get<string>('mail.from', 'noreply@smartfashion.vn'),
+      from: this.configService.get<string>(
+        'mail.from',
+        'noreply@smartfashion.vn',
+      ),
       to: email,
       subject,
       html,
@@ -135,7 +143,10 @@ export class MailProcessor extends WorkerHost {
       return;
     }
 
-    const frontendUrl = this.configService.get<string>('app.frontendUrl', 'http://localhost:3000');
+    const frontendUrl = this.configService.get<string>(
+      'app.frontendUrl',
+      'http://localhost:3000',
+    );
 
     const html = template({
       fullName: email.split('@')[0],
@@ -143,7 +154,10 @@ export class MailProcessor extends WorkerHost {
     });
 
     await this.transporter.sendMail({
-      from: this.configService.get<string>('mail.from', 'noreply@smartfashion.vn'),
+      from: this.configService.get<string>(
+        'mail.from',
+        'noreply@smartfashion.vn',
+      ),
       to: email,
       subject: '🎉 Chào mừng bạn đến với Smart Fashion AI!',
       html,
@@ -353,11 +367,17 @@ export class MailProcessor extends WorkerHost {
   }) {
     const template = this.templates.get('return-processed');
     if (!template) {
-      this.logger.warn('Template return-processed không tìm thấy, gửi email text');
+      this.logger.warn(
+        'Template return-processed không tìm thấy, gửi email text',
+      );
       // Fallback: gửi email text thuần
-      const statusText = data.decision === 'approved' ? 'ĐÃ DUYỆT' : 'BỊ TỪ CHỐI';
+      const statusText =
+        data.decision === 'approved' ? 'ĐÃ DUYỆT' : 'BỊ TỪ CHỐI';
       await this.transporter.sendMail({
-        from: this.configService.get<string>('mail.from', 'noreply@smartfashion.vn'),
+        from: this.configService.get<string>(
+          'mail.from',
+          'noreply@smartfashion.vn',
+        ),
         to: data.email,
         subject: `📦 Yêu cầu đổi/trả hàng ${statusText} — #${data.orderNumber}`,
         text: `Xin chào ${data.fullName},\n\nYêu cầu đổi/trả hàng cho đơn #${data.orderNumber} đã ${statusText}.\n${data.adminNote ? `Ghi chú: ${data.adminNote}` : ''}\n${data.refundAmount > 0 ? `Số tiền hoàn: ${data.refundAmount.toLocaleString('vi-VN')}đ` : ''}\n\nTrân trọng,\nSmart Fashion AI`,
@@ -369,12 +389,17 @@ export class MailProcessor extends WorkerHost {
     const statusText = data.decision === 'approved' ? 'ĐÃ DUYỆT' : 'BỊ TỪ CHỐI';
 
     await this.transporter.sendMail({
-      from: this.configService.get<string>('mail.from', 'noreply@smartfashion.vn'),
+      from: this.configService.get<string>(
+        'mail.from',
+        'noreply@smartfashion.vn',
+      ),
       to: data.email,
       subject: `📦 Yêu cầu đổi/trả hàng ${statusText} — #${data.orderNumber}`,
       html,
     });
 
-    this.logger.log(`✅ Email return processed đã gửi: ${data.email} → ${data.decision}`);
+    this.logger.log(
+      `✅ Email return processed đã gửi: ${data.email} → ${data.decision}`,
+    );
   }
 }

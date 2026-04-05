@@ -64,7 +64,11 @@ export class AdminReturnsController {
 
   @Get()
   @ApiOperation({ summary: 'Danh sách yêu cầu đổi/trả (Admin)' })
-  @ApiQuery({ name: 'status', required: false, enum: ['pending', 'approved', 'rejected', 'completed'] })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['pending', 'approved', 'rejected', 'completed'],
+  })
   @ApiQuery({ name: 'cursor', required: false })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   findAll(

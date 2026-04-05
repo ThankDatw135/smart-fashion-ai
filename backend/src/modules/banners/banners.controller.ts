@@ -70,9 +70,7 @@ export class AdminBannersController {
   ) {
     return this.bannersService.findAllAdmin({
       position,
-      isActive: isActive !== undefined
-        ? isActive === 'true'
-        : undefined,
+      isActive: isActive !== undefined ? isActive === 'true' : undefined,
     });
   }
 

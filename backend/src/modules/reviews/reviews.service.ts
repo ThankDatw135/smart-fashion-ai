@@ -36,12 +36,7 @@ export class ReviewsService {
     @InjectQueue(QUEUE_NAMES.MAIL) private readonly mailQueue: Queue,
   ) {
     // Ghi chú: Folder upload ảnh review nằm ở root monorepo
-    this.uploadDir = path.resolve(
-      process.cwd(),
-      '..',
-      'uploads',
-      'reviews',
-    );
+    this.uploadDir = path.resolve(process.cwd(), '..', 'uploads', 'reviews');
     this.ensureDir(this.uploadDir);
   }
 
@@ -98,9 +93,7 @@ export class ReviewsService {
     }
 
     // 4. Upload ảnh review (nếu có)
-    const imageUrls = files?.length
-      ? await this.uploadReviewImages(files)
-      : [];
+    const imageUrls = files?.length ? await this.uploadReviewImages(files) : [];
 
     // 5. Tạo review + ảnh trong transaction
     const review = await this.prisma.$transaction(async (tx) => {
@@ -246,9 +239,7 @@ export class ReviewsService {
 
     const hasNext = reviews.length > limit;
     const items = hasNext ? reviews.slice(0, limit) : reviews;
-    const nextCursor = hasNext
-      ? items[items.length - 1]?.id
-      : null;
+    const nextCursor = hasNext ? items[items.length - 1]?.id : null;
 
     // Thống kê rating distribution
     const stats = await this.prisma.review.groupBy({
@@ -289,9 +280,7 @@ export class ReviewsService {
           this.redis.del(CACHE_KEYS.PRODUCT_DETAIL(product.slug)),
           this.redis.del(CACHE_KEYS.PRODUCT_RELATED(product.slug)),
         ]);
-        this.logger.debug(
-          `Cache invalidated: product ${product.slug}`,
-        );
+        this.logger.debug(`Cache invalidated: product ${product.slug}`);
       }
     } catch (error) {
       // Non-critical — log mà không throw

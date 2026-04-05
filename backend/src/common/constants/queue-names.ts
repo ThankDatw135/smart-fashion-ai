@@ -3,7 +3,7 @@
  * Mỗi queue xử lý một loại job riêng biệt
  */
 export const QUEUE_NAMES = {
-  MAIL: 'mail',                 // Gửi email (OTP, welcome, order confirmation)
+  MAIL: 'mail', // Gửi email (OTP, welcome, order confirmation)
   NOTIFICATION: 'notification', // Tạo và gửi notification
   PRODUCT_INDEX: 'product-index', // Re-index sản phẩm sau khi tạo/sửa
   ORDER_PROCESS: 'order-process', // Xử lý đơn hàng (auto-complete, cancel)

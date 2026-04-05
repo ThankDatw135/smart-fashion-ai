@@ -6,7 +6,12 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { Prisma, OrderStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
+import {
+  Prisma,
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from '@prisma/client';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '../../prisma/prisma.service.js';
@@ -151,9 +156,7 @@ export class OrdersService {
         );
       }
       if (!item.variant.isActive) {
-        throw new BadRequestException(
-          `Phiên bản sản phẩm đã ngừng bán`,
-        );
+        throw new BadRequestException(`Phiên bản sản phẩm đã ngừng bán`);
       }
       if (item.variant.stockQuantity < item.quantity) {
         throw new BadRequestException(CHECKOUT_STOCK_INSUFFICIENT);
@@ -222,8 +225,7 @@ export class OrdersService {
     const session = await this.getCheckoutSession(checkoutId);
 
     // Tính phí ship theo tỉnh
-    const shippingFee =
-      SHIPPING_FEES[dto.province] || DEFAULT_SHIPPING_FEE;
+    const shippingFee = SHIPPING_FEES[dto.province] || DEFAULT_SHIPPING_FEE;
 
     // Cập nhật session
     session.address = {
@@ -264,11 +266,7 @@ export class OrdersService {
   /**
    * Áp dụng voucher cho checkout
    */
-  async applyVoucher(
-    checkoutId: string,
-    voucherCode: string,
-    userId: string,
-  ) {
+  async applyVoucher(checkoutId: string, voucherCode: string, userId: string) {
     const session = await this.getCheckoutSession(checkoutId);
 
     // Tìm voucher
@@ -559,9 +557,10 @@ export class OrdersService {
         ),
         subtotal: session.subtotal.toLocaleString('vi-VN'),
         shippingFee: session.shippingFee.toLocaleString('vi-VN'),
-        discount: session.discount > 0
-          ? session.discount.toLocaleString('vi-VN')
-          : undefined,
+        discount:
+          session.discount > 0
+            ? session.discount.toLocaleString('vi-VN')
+            : undefined,
         total: session.total.toLocaleString('vi-VN'),
         shippingName: session.address.fullName,
         shippingPhone: session.address.phone,
@@ -722,7 +721,9 @@ export class OrdersService {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        user: { select: { id: true, fullName: true, email: true, phone: true } },
+        user: {
+          select: { id: true, fullName: true, email: true, phone: true },
+        },
         items: {
           include: {
             product: { select: { slug: true } },
@@ -826,16 +827,12 @@ export class OrdersService {
     }
 
     // Publish event
-    await this.rabbitmq.publish(
-      'sf.order.events',
-      'order.status.changed',
-      {
-        orderId,
-        orderNumber: order.orderNumber,
-        oldStatus: order.status,
-        newStatus: dto.status,
-      },
-    );
+    await this.rabbitmq.publish('sf.order.events', 'order.status.changed', {
+      orderId,
+      orderNumber: order.orderNumber,
+      oldStatus: order.status,
+      newStatus: dto.status,
+    });
 
     this.logger.log(
       `Đơn ${order.orderNumber}: ${order.status} → ${dto.status}`,
@@ -1012,7 +1009,7 @@ export class OrdersService {
   /**
    * Lấy và validate checkout session từ Redis
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   private async getCheckoutSession(checkoutId: string): Promise<any> {
     const session = await this.redis.getJson(
       CACHE_KEYS.CHECKOUT_SESSION(checkoutId),
@@ -1026,13 +1023,10 @@ export class OrdersService {
   /**
    * Generate order number: SF-YYYYMMDD-NNN
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   private async generateOrderNumber(tx: any): Promise<string> {
     const today = new Date();
-    const dateStr = today
-      .toISOString()
-      .slice(0, 10)
-      .replace(/-/g, '');
+    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
     const prefix = `SF-${dateStr}`;
 
     // Đếm đơn hàng hôm nay

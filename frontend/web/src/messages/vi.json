@@ -1,0 +1,14 @@
+{
+  "Common": {
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "search": "Tìm kiếm sản phẩm...",
+    "cart": "Giỏ hàng",
+    "account": "Tài khoản"
+  },
+  "Home": {
+    "flashSale": "Khuyến mãi giờ vàng",
+    "newArrivals": "Hàng mới về",
+    "bestSellers": "Bán chạy nhất"
+  }
+}

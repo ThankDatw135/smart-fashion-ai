@@ -27,19 +27,25 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
    * Validate — được gọi khi Google redirect về callback URL
    * Trích xuất email, tên, avatar, googleId từ profile
    */
-  async validate(
+  validate(
     accessToken: string,
     refreshToken: string,
     profile: Profile,
     done: VerifyCallback,
-  ): Promise<void> {
+  ): void {
     const { id, emails, displayName, photos } = profile;
+
+    let fullName = displayName || '';
+    if (!fullName && profile.name) {
+      fullName =
+        `${profile.name.familyName || ''} ${profile.name.givenName || ''}`.trim();
+    }
 
     // Dữ liệu từ Google profile — sẽ được dùng để upsert user
     const googleUser = {
       googleId: id,
       email: emails?.[0]?.value || '',
-      fullName: displayName || '',
+      fullName: fullName,
       avatarUrl: photos?.[0]?.value || null,
     };
 

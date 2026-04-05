@@ -13,7 +13,10 @@ import type { ApiResponseDto } from '../dto/api-response.dto.js';
  * Áp dụng global cho tất cả response trả về từ controller
  */
 @Injectable()
-export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponseDto<T>> {
+export class TransformInterceptor<T> implements NestInterceptor<
+  T,
+  ApiResponseDto<T>
+> {
   intercept(
     context: ExecutionContext,
     next: CallHandler,
@@ -21,7 +24,12 @@ export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponseDt
     return next.handle().pipe(
       map((data) => {
         // Nếu controller trả về object có key 'data' và 'meta' → tách riêng
-        if (data && typeof data === 'object' && 'data' in data && 'meta' in data) {
+        if (
+          data &&
+          typeof data === 'object' &&
+          'data' in data &&
+          'meta' in data
+        ) {
           return {
             success: true,
             data: data.data as T,

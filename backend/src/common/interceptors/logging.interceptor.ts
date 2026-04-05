@@ -37,7 +37,9 @@ export class LoggingInterceptor implements NestInterceptor {
 
           // Cảnh báo query chậm — > 200ms cần tối ưu
           if (duration > 200) {
-            this.logger.warn(`⚠️ Slow request: ${method} ${url} took ${duration}ms`);
+            this.logger.warn(
+              `⚠️ Slow request: ${method} ${url} took ${duration}ms`,
+            );
           }
         },
         error: (error: Error) => {

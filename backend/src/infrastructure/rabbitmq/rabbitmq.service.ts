@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -13,9 +18,9 @@ const amqplib = require('amqplib');
 @Injectable()
 export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RabbitmqService.name);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   private connection: any = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   private channel: any = null;
   private readonly url: string;
   private readonly queuePrefix: string;
@@ -25,7 +30,10 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
       'rabbitmq.url',
       'amqp://smartfashion:smartfashion_secret@localhost:5672',
     );
-    this.queuePrefix = this.configService.get<string>('rabbitmq.queuePrefix', 'sf');
+    this.queuePrefix = this.configService.get<string>(
+      'rabbitmq.queuePrefix',
+      'sf',
+    );
   }
 
   async onModuleInit() {
@@ -45,7 +53,11 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
    * Publish event lên exchange — AI Service sẽ consume
    * Nếu RabbitMQ không available → log warning, không throw
    */
-  async publish(exchange: string, routingKey: string, data: unknown): Promise<void> {
+  async publish(
+    exchange: string,
+    routingKey: string,
+    data: unknown,
+  ): Promise<void> {
     if (!this.channel) {
       this.logger.warn(`⚠️ RabbitMQ chưa kết nối. Bỏ qua event: ${routingKey}`);
       return;
@@ -75,7 +87,9 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
     handler: (data: unknown) => Promise<void>,
   ): Promise<void> {
     if (!this.channel) {
-      this.logger.warn(`⚠️ RabbitMQ chưa kết nối. Không thể subscribe: ${queueName}`);
+      this.logger.warn(
+        `⚠️ RabbitMQ chưa kết nối. Không thể subscribe: ${queueName}`,
+      );
       return;
     }
 
@@ -85,7 +99,6 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
       await this.channel.assertQueue(fullQueueName, { durable: true });
       await this.channel.bindQueue(fullQueueName, exchange, routingKey);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await this.channel.consume(fullQueueName, async (msg: any) => {
         if (!msg) return;
 
@@ -100,7 +113,9 @@ export class RabbitmqService implements OnModuleInit, OnModuleDestroy {
         }
       });
 
-      this.logger.log(`📥 Subscribed: ${fullQueueName} ← ${exchange}/${routingKey}`);
+      this.logger.log(
+        `📥 Subscribed: ${fullQueueName} ← ${exchange}/${routingKey}`,
+      );
     } catch (error) {
       this.logger.error(`❌ Subscribe failed: ${(error as Error).message}`);
     }

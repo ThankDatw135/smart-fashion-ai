@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
 /**
@@ -42,9 +38,7 @@ export class WishlistService {
       await this.prisma.wishlist.delete({
         where: { id: existing.id },
       });
-      this.logger.debug(
-        `Wishlist: Bỏ yêu thích "${product.name}"`,
-      );
+      this.logger.debug(`Wishlist: Bỏ yêu thích "${product.name}"`);
       return { action: 'removed', productId };
     }
 
@@ -52,9 +46,7 @@ export class WishlistService {
     await this.prisma.wishlist.create({
       data: { userId, productId },
     });
-    this.logger.debug(
-      `Wishlist: Thêm yêu thích "${product.name}"`,
-    );
+    this.logger.debug(`Wishlist: Thêm yêu thích "${product.name}"`);
     return { action: 'added', productId };
   }
 
@@ -93,9 +85,7 @@ export class WishlistService {
 
     const hasNext = items.length > limit;
     const data = hasNext ? items.slice(0, limit) : items;
-    const nextCursor = hasNext
-      ? data[data.length - 1]?.id
-      : null;
+    const nextCursor = hasNext ? data[data.length - 1]?.id : null;
 
     return {
       items: data.map((w) => ({
@@ -124,9 +114,7 @@ export class WishlistService {
     });
 
     if (!existing) {
-      throw new NotFoundException(
-        'Sản phẩm chưa có trong danh sách yêu thích',
-      );
+      throw new NotFoundException('Sản phẩm chưa có trong danh sách yêu thích');
     }
 
     await this.prisma.wishlist.delete({

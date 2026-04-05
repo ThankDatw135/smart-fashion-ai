@@ -35,15 +35,13 @@ export class AnalyticsService {
     if (cached) return JSON.parse(cached) as Record<string, unknown>;
 
     const today = new Date();
-    const startOfMonth = new Date(
-      today.getFullYear(), today.getMonth(), 1,
-    );
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const startOfLastMonth = new Date(
-      today.getFullYear(), today.getMonth() - 1, 1,
+      today.getFullYear(),
+      today.getMonth() - 1,
+      1,
     );
-    const endOfLastMonth = new Date(
-      today.getFullYear(), today.getMonth(), 0,
-    );
+    const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
 
     const [
       totalRevenue,
@@ -110,9 +108,10 @@ export class AnalyticsService {
 
     const currentMonthRev = Number(monthlyRevenue._sum.total ?? 0);
     const lastMonthRev = Number(lastMonthRevenue._sum.total ?? 0);
-    const revenueGrowth = lastMonthRev > 0
-      ? ((currentMonthRev - lastMonthRev) / lastMonthRev) * 100
-      : 0;
+    const revenueGrowth =
+      lastMonthRev > 0
+        ? ((currentMonthRev - lastMonthRev) / lastMonthRev) * 100
+        : 0;
 
     const result = {
       revenue: {
@@ -140,9 +139,7 @@ export class AnalyticsService {
       },
     };
 
-    await this.redis.set(
-      cacheKey, JSON.stringify(result), DASHBOARD_CACHE_TTL,
-    );
+    await this.redis.set(cacheKey, JSON.stringify(result), DASHBOARD_CACHE_TTL);
     return result;
   }
 
@@ -203,9 +200,7 @@ export class AnalyticsService {
       });
     }
 
-    await this.redis.set(
-      cacheKey, JSON.stringify(result), DASHBOARD_CACHE_TTL,
-    );
+    await this.redis.set(cacheKey, JSON.stringify(result), DASHBOARD_CACHE_TTL);
     return result;
   }
 
@@ -263,9 +258,7 @@ export class AnalyticsService {
       };
     });
 
-    await this.redis.set(
-      cacheKey, JSON.stringify(result), DASHBOARD_CACHE_TTL,
-    );
+    await this.redis.set(cacheKey, JSON.stringify(result), DASHBOARD_CACHE_TTL);
     return result;
   }
 
@@ -288,9 +281,7 @@ export class AnalyticsService {
       count: s._count.id,
     }));
 
-    await this.redis.set(
-      cacheKey, JSON.stringify(result), DASHBOARD_CACHE_TTL,
-    );
+    await this.redis.set(cacheKey, JSON.stringify(result), DASHBOARD_CACHE_TTL);
     return result;
   }
 }

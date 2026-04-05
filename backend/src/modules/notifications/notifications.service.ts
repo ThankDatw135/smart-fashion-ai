@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -166,5 +163,74 @@ export class NotificationsService {
     this.logger.log(
       `📧 Email xác nhận đơn hàng đã enqueue: ${emailData.orderNumber}`,
     );
+  }
+
+  // ===========================================================================
+  // USER NOTIFICATION METHODS — Cho NotificationsController
+  // ===========================================================================
+
+  /**
+   * Lấy danh sách thông báo của user (phân trang)
+   */
+  async getUserNotifications(
+    userId: string,
+    options: { page: number; limit: number },
+  ) {
+    const { page, limit } = options;
+    const skip = (page - 1) * limit;
+
+    const [notifications, total] = await Promise.all([
+      this.prisma.notification.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.notification.count({ where: { userId } }),
+    ]);
+
+    return {
+      data: notifications,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1,
+      },
+    };
+  }
+
+  /**
+   * Đếm số thông báo chưa đọc
+   */
+  async getUnreadCount(userId: string) {
+    const count = await this.prisma.notification.count({
+      where: { userId, isRead: false },
+    });
+    return { unreadCount: count };
+  }
+
+  /**
+   * Đánh dấu 1 thông báo đã đọc
+   */
+  async markAsRead(notificationId: string, userId: string) {
+    await this.prisma.notification.updateMany({
+      where: { id: notificationId, userId },
+      data: { isRead: true },
+    });
+    return { message: 'Đã đánh dấu đã đọc' };
+  }
+
+  /**
+   * Đánh dấu tất cả thông báo đã đọc
+   */
+  async markAllAsRead(userId: string) {
+    const result = await this.prisma.notification.updateMany({
+      where: { userId, isRead: false },
+      data: { isRead: true },
+    });
+    return { message: `Đã đánh dấu ${result.count} thông báo đã đọc` };
   }
 }

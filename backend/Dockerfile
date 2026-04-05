@@ -13,7 +13,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Cài tất cả dependencies (bao gồm devDependencies cho build)
-RUN npm ci
+RUN npm install
 
 # Copy toàn bộ source code
 COPY . .
@@ -33,7 +33,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Chỉ cài production dependencies (không cần devDependencies)
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Copy Prisma schema + generated client từ builder
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
@@ -42,8 +42,8 @@ COPY --from=builder /app/prisma ./prisma
 # Copy dist (compiled JS) từ builder
 COPY --from=builder /app/dist ./dist
 
-# Copy email templates (Handlebars)
-COPY --from=builder /app/src/modules/notifications/templates ./dist/modules/notifications/templates
+# Copy email templates (Handlebars) - Commented out until they exist
+# COPY --from=builder /app/src/modules/notifications/templates ./dist/modules/notifications/templates
 
 # Copy RSA keys nếu có (JWT RS256)
 # Lưu ý: Trong production, nên dùng secrets management thay vì copy file
@@ -62,4 +62,4 @@ ENV APP_PORT=4000
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
   CMD wget -q --spider http://localhost:4000/api/v1/health || exit 1
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]

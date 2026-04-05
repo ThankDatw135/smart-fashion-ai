@@ -28,7 +28,9 @@ export class HealthController {
     ]);
 
     const [db, redis, rabbitmq] = checks.map((result) =>
-      result.status === 'fulfilled' ? result.value : { status: 'down', error: (result.reason as Error).message },
+      result.status === 'fulfilled'
+        ? result.value
+        : { status: 'down', error: (result.reason as Error).message },
     );
 
     const allUp = [db, redis, rabbitmq].every(

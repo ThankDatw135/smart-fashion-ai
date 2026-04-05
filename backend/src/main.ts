@@ -18,7 +18,10 @@ async function bootstrap() {
   // --- Lấy config ---
   const port = configService.get<number>('app.port', 4000);
   const apiPrefix = configService.get<string>('app.apiPrefix', 'api');
-  const frontendUrl = configService.get<string>('app.frontendUrl', 'http://localhost:3000');
+  const frontendUrl = configService.get<string>(
+    'app.frontendUrl',
+    'http://localhost:3000',
+  );
 
   // --- Security Headers ---
   app.use(helmet());
@@ -46,9 +49,9 @@ async function bootstrap() {
   // --- Global Validation Pipe ---
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,        // Loại bỏ field không khai báo trong DTO
+      whitelist: true, // Loại bỏ field không khai báo trong DTO
       forbidNonWhitelisted: true, // Throw lỗi nếu gửi field lạ
-      transform: true,        // Tự động chuyển đổi type (string → number)
+      transform: true, // Tự động chuyển đổi type (string → number)
       transformOptions: {
         enableImplicitConversion: true,
       },
@@ -59,8 +62,8 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Smart Fashion AI — API')
     .setDescription(
-      'REST API cho website bán quần áo tích hợp AI. '
-      + 'Hỗ trợ: Auth, Products, Cart, Checkout, Orders, VIP, Reviews, Blog, Notifications.',
+      'REST API cho website bán quần áo tích hợp AI. ' +
+        'Hỗ trợ: Auth, Products, Cart, Checkout, Orders, VIP, Reviews, Blog, Notifications.',
     )
     .setVersion('1.0')
     .addBearerAuth(
@@ -81,7 +84,9 @@ async function bootstrap() {
   await app.listen(port);
   logger.log(`🚀 Server đang chạy tại http://localhost:${port}`);
   logger.log(`📖 Swagger UI: http://localhost:${port}/${apiPrefix}/docs`);
-  logger.log(`💚 Health check: http://localhost:${port}/${apiPrefix}/v1/health`);
+  logger.log(
+    `💚 Health check: http://localhost:${port}/${apiPrefix}/v1/health`,
+  );
 }
 
 bootstrap();

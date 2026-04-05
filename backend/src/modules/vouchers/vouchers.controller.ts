@@ -22,6 +22,11 @@ import { Roles } from '../../common/decorators/roles.decorator.js';
 import { VouchersService } from './vouchers.service.js';
 import { CreateVoucherDto, UpdateVoucherDto } from './dto/index.js';
 
+// Ghi chú: Interface cho request khi có user
+interface AuthenticatedRequest {
+  user: { id: string; role: string };
+}
+
 /**
  * Voucher Controller — Admin CRUD + Public check
  */
@@ -39,8 +44,11 @@ export class VouchersController {
   @Roles('admin', 'super_admin')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Tạo voucher mới (Admin)' })
-  async create(@Body() dto: CreateVoucherDto, @Req() req: any) {
-    return this.vouchersService.create(dto, req.user.id as string);
+  async create(
+    @Body() dto: CreateVoucherDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.vouchersService.create(dto, req.user.id);
   }
 
   @Get('admin/vouchers')
@@ -98,11 +106,41 @@ export class VouchersController {
   // PUBLIC ENDPOINTS
   // ===========================================================================
 
+  @Get('vouchers')
+  @ApiOperation({
+    summary: 'Lấy danh sách mã giảm giá đang hoạt động (Public)',
+  })
+  async findActivePublic() {
+    return this.vouchersService.findActivePublic();
+  }
+
+  @Get('vouchers/me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Lấy mã giảm giá của tôi (User)' })
+  async findMyVouchers(@Req() req: AuthenticatedRequest) {
+    return this.vouchersService.findMyVouchers(req.user.id);
+  }
+
+  @Post('vouchers/:id/collect')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Lưu mã giảm giá (User)' })
+  async collectVoucher(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.vouchersService.collectVoucher(req.user.id, id);
+  }
+
   @Get('vouchers/check/:code')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Kiểm tra voucher hợp lệ (User)' })
-  async checkVoucher(@Param('code') code: string, @Req() req: any) {
-    return this.vouchersService.checkVoucher(code, req.user?.id as string);
+  async checkVoucher(
+    @Param('code') code: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.vouchersService.checkVoucher(code, req.user?.id);
   }
 }

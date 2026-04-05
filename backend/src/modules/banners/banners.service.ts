@@ -11,7 +11,11 @@ import * as crypto from 'crypto';
 import { BannerPosition as PrismaBannerPosition } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { RedisService } from '../../infrastructure/redis/redis.service.js';
-import { CreateBannerDto, UpdateBannerDto, BannerPosition } from './dto/index.js';
+import {
+  CreateBannerDto,
+  UpdateBannerDto,
+  BannerPosition,
+} from './dto/index.js';
 
 // Ghi chú: Cache key cho banner public
 const BANNER_CACHE_KEY = 'banners:active';
@@ -34,12 +38,7 @@ export class BannersService {
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
   ) {
-    this.uploadDir = path.resolve(
-      process.cwd(),
-      '..',
-      'uploads',
-      'banners',
-    );
+    this.uploadDir = path.resolve(process.cwd(), '..', 'uploads', 'banners');
     this.ensureDir(this.uploadDir);
   }
 
@@ -50,14 +49,9 @@ export class BannersService {
   /**
    * Tạo banner mới (Admin) — bắt buộc có ảnh
    */
-  async create(
-    dto: CreateBannerDto,
-    image?: Express.Multer.File,
-  ) {
+  async create(dto: CreateBannerDto, image?: Express.Multer.File) {
     if (!image) {
-      throw new BadRequestException(
-        'Bắt buộc upload ảnh banner',
-      );
+      throw new BadRequestException('Bắt buộc upload ảnh banner');
     }
 
     const imageUrl = await this.uploadImage(image);
@@ -69,21 +63,15 @@ export class BannersService {
         linkUrl: dto.linkUrl ?? null,
         position: dto.position as PrismaBannerPosition,
         sortOrder: dto.sortOrder ?? 0,
-        startDate: dto.startDate
-          ? new Date(dto.startDate)
-          : null,
-        endDate: dto.endDate
-          ? new Date(dto.endDate)
-          : null,
+        startDate: dto.startDate ? new Date(dto.startDate) : null,
+        endDate: dto.endDate ? new Date(dto.endDate) : null,
         isActive: true,
       },
     });
 
     await this.invalidateCache();
 
-    this.logger.log(
-      `Banner tạo mới: "${banner.title}" [${banner.position}]`,
-    );
+    this.logger.log(`Banner tạo mới: "${banner.title}" [${banner.position}]`);
     return banner;
   }
 
@@ -113,11 +101,7 @@ export class BannersService {
   /**
    * Cập nhật banner (Admin)
    */
-  async update(
-    id: string,
-    dto: UpdateBannerDto,
-    image?: Express.Multer.File,
-  ) {
+  async update(id: string, dto: UpdateBannerDto, image?: Express.Multer.File) {
     const banner = await this.prisma.banner.findUnique({
       where: { id },
     });
@@ -125,9 +109,7 @@ export class BannersService {
       throw new NotFoundException('Banner không tồn tại');
     }
 
-    const imageUrl = image
-      ? await this.uploadImage(image)
-      : undefined;
+    const imageUrl = image ? await this.uploadImage(image) : undefined;
 
     const updated = await this.prisma.banner.update({
       where: { id },
@@ -143,14 +125,10 @@ export class BannersService {
           sortOrder: dto.sortOrder,
         }),
         ...(dto.startDate !== undefined && {
-          startDate: dto.startDate
-            ? new Date(dto.startDate)
-            : null,
+          startDate: dto.startDate ? new Date(dto.startDate) : null,
         }),
         ...(dto.endDate !== undefined && {
-          endDate: dto.endDate
-            ? new Date(dto.endDate)
-            : null,
+          endDate: dto.endDate ? new Date(dto.endDate) : null,
         }),
         ...(dto.isActive !== undefined && {
           isActive: dto.isActive,
@@ -209,23 +187,14 @@ export class BannersService {
         ...(position && {
           position: position as PrismaBannerPosition,
         }),
-        OR: [
-          { startDate: null },
-          { startDate: { lte: now } },
-        ],
+        OR: [{ startDate: null }, { startDate: { lte: now } }],
         AND: [
           {
-            OR: [
-              { endDate: null },
-              { endDate: { gte: now } },
-            ],
+            OR: [{ endDate: null }, { endDate: { gte: now } }],
           },
         ],
       },
-      orderBy: [
-        { sortOrder: 'asc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
       select: {
         id: true,
         title: true,
@@ -236,11 +205,7 @@ export class BannersService {
     });
 
     // Lưu cache 10 phút
-    await this.redis.set(
-      cacheKey,
-      JSON.stringify(banners),
-      BANNER_CACHE_TTL,
-    );
+    await this.redis.set(cacheKey, JSON.stringify(banners), BANNER_CACHE_TTL);
 
     return banners;
   }
@@ -252,9 +217,7 @@ export class BannersService {
   /**
    * Upload + resize banner image (WebP, 1200x400)
    */
-  private async uploadImage(
-    file: Express.Multer.File,
-  ): Promise<string> {
+  private async uploadImage(file: Express.Multer.File): Promise<string> {
     const hash = crypto.randomBytes(8).toString('hex');
     const filename = `${Date.now()}-${hash}.webp`;
     const filepath = path.join(this.uploadDir, filename);

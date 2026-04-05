@@ -4,6 +4,7 @@ import { diskStorage } from 'multer';
 import { extname, resolve } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { UsersController } from './users.controller.js';
+import { AdminUsersController } from './admin-users.controller.js';
 import { UsersService } from './users.service.js';
 
 /**
@@ -35,7 +36,7 @@ import { UsersService } from './users.service.js';
       },
     }),
   ],
-  controllers: [UsersController],
+  controllers: [UsersController, AdminUsersController],
   providers: [UsersService],
   exports: [UsersService],
 })

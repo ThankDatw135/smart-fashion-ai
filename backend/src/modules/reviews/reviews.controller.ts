@@ -77,10 +77,7 @@ export class ReviewsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Xóa đánh giá của mình (User)' })
-  async delete(
-    @Param('id') id: string,
-    @Req() req: AuthenticatedRequest,
-  ) {
+  async delete(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.reviewsService.delete(id, req.user.id);
   }
 }

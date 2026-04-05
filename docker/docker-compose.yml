@@ -102,6 +102,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       REDIS_HOST: redis
+      REDIS_PORT: 6379
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/${RABBITMQ_VHOST}
     volumes:
       - ../uploads:/app/uploads
@@ -125,7 +126,7 @@ services:
     container_name: sf-ai-service
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8001:8000"
     env_file:
       - ../ai-service/.env
     environment:
@@ -140,6 +141,27 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    networks:
+      - sf-network
+
+  # ─────────────────────────────────────
+  # Frontend — Next.js 16 (TypeScript)
+  # ─────────────────────────────────────
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: web/Dockerfile
+    container_name: sf-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3001}:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:4000/api/v1
+      NEXT_PUBLIC_USE_MOCK: "false"
+      NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-dh9o1ih7g}
+    depends_on:
+      backend:
+        condition: service_started
     networks:
       - sf-network
 

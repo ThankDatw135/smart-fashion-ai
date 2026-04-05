@@ -135,10 +135,7 @@ export class AdminBlogCategoryController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Cập nhật danh mục blog (Admin)' })
-  update(
-    @Param('id') id: string,
-    @Body() dto: UpdateBlogCategoryDto,
-  ) {
+  update(@Param('id') id: string, @Body() dto: UpdateBlogCategoryDto) {
     return this.blogService.updateCategory(id, dto);
   }
 

@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * ============================================================
+ * DESIGN SYSTEM — Smart Fashion AI
+ * Đồng bộ với thiết kế Stitch (.stitch/designs/index.html)
+ * Palette: Material Design 3 — Blue (#005cbc)
+ * Fonts: Outfit (headline) + Inter (body) + Be Vietnam Pro
+ * ============================================================
+ */
+
+@layer base {
+  :root {
+    /* Surface & Background — Light Mode */
+    --background: 210 33% 98%;        /* #f7f9fb — Surface chính */
+    --foreground: 210 11% 11%;        /* #191c1e — On-surface */
+
+    --card: 0 0% 100%;                /* #ffffff */
+    --card-foreground: 210 11% 11%;   /* #191c1e */
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 11% 11%;
+
+    /* Primary — Blue #005cbc */
+    --primary: 212 100% 37%;          /* #005cbc */
+    --primary-foreground: 0 0% 100%;  /* #ffffff */
+
+    /* Secondary — Teal #36637e */
+    --secondary: 200 39% 35%;         /* #36637e */
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted & Accent */
+    --muted: 210 20% 96%;             /* #f2f4f6 — surface-container-low */
+    --muted-foreground: 201 8% 29%;   /* #41484d — on-surface-variant */
+
+    --accent: 210 18% 93%;            /* #eceef0 — surface-container */
+    --accent-foreground: 210 11% 11%;
+
+    /* Destructive — Error red */
+    --destructive: 0 73% 41%;         /* #ba1a1a */
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Inputs */
+    --border: 207 9% 78%;             /* #c1c7cd — outline-variant */
+    --input: 207 9% 78%;
+    --ring: 212 100% 37%;             /* primary */
+
+    /* Radius — matches design 0.5rem (8px) */
+    --radius: 0.5rem;
+
+    /* ====== Extended Design Tokens ====== */
+    --primary-container: 222 100% 89%;  /* #cadaff */
+    --surface-dim: 210 5% 85%;          /* #d8dadc */
+    --tertiary: 37 55% 30%;             /* #775922 */
+    --tertiary-container: 37 95% 78%;   /* #fdd490 */
+    --outline: 201 5% 47%;              /* #71787d */
+  }
+
+  .dark {
+    /* Surface & Background — Dark Mode */
+    --background: 210 10% 10%;        /* ~#181a1c */
+    --foreground: 210 14% 95%;        /* ~#eff1f3 */
+
+    --card: 210 10% 12%;
+    --card-foreground: 210 14% 95%;
+
+    --popover: 210 10% 12%;
+    --popover-foreground: 210 14% 95%;
+
+    /* Primary — Lighter in dark mode */
+    --primary: 222 100% 84%;          /* #abc7ff — inverse-primary */
+    --primary-foreground: 213 100% 28%; /* #004590 */
+
+    /* Secondary */
+    --secondary: 201 40% 45%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted */
+    --muted: 213 17% 18%;
+    --muted-foreground: 210 14% 65%;
+
+    --accent: 213 17% 18%;
+    --accent-foreground: 210 14% 95%;
+
+    /* Destructive */
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 14% 95%;
+
+    /* Borders */
+    --border: 213 17% 18%;
+    --input: 213 17% 18%;
+    --ring: 222 100% 84%;
+
+    /* Extended */
+    --primary-container: 213 100% 23%;
+    --surface-dim: 210 10% 14%;
+    --tertiary: 37 60% 60%;
+    --tertiary-container: 37 50% 20%;
+    --outline: 201 5% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* ====== Design Utilities — từ Stitch ====== */
+@layer utilities {
+  /* Glass Card (glassmorphism) */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .dark .glass-card {
+    background: rgba(24, 26, 28, 0.7);
+  }
+
+  /* Tonal Shift gradient nhẹ */
+  .tonal-shift {
+    background: linear-gradient(
+      180deg,
+      rgba(247, 249, 251, 0) 0%,
+      rgba(236, 238, 240, 0.5) 100%
+    );
+  }
+
+  /* Hide scrollbar */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Text gradient (logo, headline highlight) */
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-blue-700 to-blue-500 bg-clip-text text-transparent;
+  }
+}

@@ -19,7 +19,11 @@ import {
   ApiHeader,
 } from '@nestjs/swagger';
 import { CartService } from './cart.service.js';
-import { AddCartItemDto, UpdateCartItemDto, MergeCartDto } from './dto/index.js';
+import {
+  AddCartItemDto,
+  UpdateCartItemDto,
+  MergeCartDto,
+} from './dto/index.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { OptionalAuthGuard } from '../auth/guards/optional-auth.guard.js';
 
@@ -161,10 +165,7 @@ export class CartController {
   @ApiBearerAuth('JWT-Auth')
   @ApiOperation({ summary: 'Gộp giỏ khách vào giỏ user (khi đăng nhập)' })
   @ApiResponse({ status: 200, description: 'Giỏ hàng đã gộp' })
-  async mergeCart(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: MergeCartDto,
-  ) {
+  async mergeCart(@Req() req: AuthenticatedRequest, @Body() dto: MergeCartDto) {
     return this.cartService.mergeGuestCartToUser(req.user!.id, dto.guestId);
   }
 }

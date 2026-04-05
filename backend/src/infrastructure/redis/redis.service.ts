@@ -64,7 +64,11 @@ export class RedisService implements OnModuleDestroy {
   }
 
   /** Lưu object dưới dạng JSON với TTL */
-  async setJson(key: string, value: unknown, ttlSeconds?: number): Promise<void> {
+  async setJson(
+    key: string,
+    value: unknown,
+    ttlSeconds?: number,
+  ): Promise<void> {
     await this.set(key, JSON.stringify(value), ttlSeconds);
   }
 

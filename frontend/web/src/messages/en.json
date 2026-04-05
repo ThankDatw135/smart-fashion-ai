@@ -1,0 +1,14 @@
+{
+  "Common": {
+    "login": "Login",
+    "register": "Register",
+    "search": "Search products...",
+    "cart": "Cart",
+    "account": "Account"
+  },
+  "Home": {
+    "flashSale": "Flash Sale",
+    "newArrivals": "New Arrivals",
+    "bestSellers": "Best Sellers"
+  }
+}

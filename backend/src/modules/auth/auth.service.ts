@@ -340,6 +340,7 @@ export class AuthService {
         googleId: googleUser.googleId,
         avatarUrl: googleUser.avatarUrl || undefined,
         emailVerified: true, // Google xác minh email sẵn
+        fullName: googleUser.fullName || undefined, // Update the actual name from Google
       },
       create: {
         email,

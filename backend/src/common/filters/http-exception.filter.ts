@@ -7,7 +7,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { INTERNAL_SERVER_ERROR, VALIDATION_ERROR } from '../constants/error-codes.js';
+import {
+  INTERNAL_SERVER_ERROR,
+  VALIDATION_ERROR,
+} from '../constants/error-codes.js';
 import type { ApiErrorDto } from '../dto/api-response.dto.js';
 
 /**
@@ -34,7 +37,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
         const res = exceptionResponse as Record<string, unknown>;
-        errorCode = (res['errorCode'] as string) || this.getDefaultErrorCode(status);
+        errorCode =
+          (res['errorCode'] as string) || this.getDefaultErrorCode(status);
         message = (res['message'] as string) || exception.message;
 
         // class-validator trả về mảng message
@@ -44,7 +48,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           details = res['message'] as string[];
         }
       } else {
-        message = exceptionResponse as string;
+        message = exceptionResponse;
         errorCode = this.getDefaultErrorCode(status);
       }
     } else if (exception instanceof Error) {
