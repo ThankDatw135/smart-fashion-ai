@@ -19,7 +19,7 @@ export function RegisterForm() {
   const { mutateAsync: signup, isPending: isLoading } = useRegister();
   
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     email: "",
     password: "",
     confirmPassword: ""
@@ -43,7 +43,7 @@ export function RegisterForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.password) {
+    if (!formData.fullName || !formData.email || !formData.password) {
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
@@ -59,9 +59,14 @@ export function RegisterForm() {
     }
 
     try {
-      await signup(formData);
-      toast.success("Đăng ký thành công! Vui lòng kiểm tra email.");
-      router.push("/verify-otp");
+      const { ...registerData } = formData;
+      await signup({ 
+        fullName: registerData.fullName, 
+        email: registerData.email, 
+        password: registerData.password 
+      });
+      toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
+      router.push("/login");
     } catch {
       toast.error("Đăng ký thất bại. Xin thử lại.");
     }
@@ -83,12 +88,12 @@ export function RegisterForm() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Họ và tên</Label>
+              <Label htmlFor="fullName">Họ và tên</Label>
               <Input
-                id="name"
+                id="fullName"
                 placeholder="Nguyễn Văn A"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                value={formData.fullName}
+                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 required
                 className="bg-background/50 h-11"
               />

@@ -8,42 +8,8 @@ import { Button } from "@/components/ui/button";
 import { RotateCcw, Check, X } from "lucide-react";
 import { format } from "date-fns";
 
-type ReturnRequest = {
-  id: string;
-  orderId: string;
-  customerName: string;
-  reason: string;
-  status: "pending" | "approved" | "rejected" | "completed";
-  createdAt: Date;
-};
-
-// Mock data
-const MOCK_RETURNS: ReturnRequest[] = [
-  {
-    id: "RET-1001",
-    orderId: "ORD-2026-0985",
-    customerName: "Nguyễn Văn A",
-    reason: "Sản phẩm không đúng kích cỡ mô tả.",
-    status: "pending",
-    createdAt: new Date(),
-  },
-  {
-    id: "RET-1002",
-    orderId: "ORD-2026-0980",
-    customerName: "Trần Thị B",
-    reason: "Lỗi đường chỉ may bên hông áo.",
-    status: "approved",
-    createdAt: new Date(Date.now() - 86400000),
-  },
-  {
-    id: "RET-1003",
-    orderId: "ORD-2026-0950",
-    customerName: "Lê C",
-    reason: "Không thích nữa.",
-    status: "rejected",
-    createdAt: new Date(Date.now() - 86400000 * 3),
-  },
-];
+import { ReturnRequest } from "@/services/returns.api";
+import { useAdminReturns } from "@/hooks/useReturns";
 
 export default function AdminReturnsPage() {
   const columns = useMemo<ColumnDef<ReturnRequest>[]>(
@@ -89,7 +55,13 @@ export default function AdminReturnsPage() {
       {
         accessorKey: "createdAt",
         header: "Ngày gửi",
-        cell: ({ row }) => <span className="text-sm">{format(row.original.createdAt, "dd/MM/yyyy")}</span>,
+        cell: ({ row }) => {
+          try {
+            return <span className="text-sm">{format(new Date(row.original.createdAt), "dd/MM/yyyy")}</span>;
+          } catch (e) {
+            return <span className="text-sm">{row.original.createdAt}</span>;
+          }
+        },
       },
       {
         id: "actions",
@@ -109,6 +81,9 @@ export default function AdminReturnsPage() {
     []
   );
 
+  const { data: res } = useAdminReturns();
+  const returns = res?.data || [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -120,7 +95,7 @@ export default function AdminReturnsPage() {
         </div>
       </div>
 
-      <DataTable columns={columns} data={MOCK_RETURNS} />
+      <DataTable columns={columns} data={returns} pageCount={res?.meta?.totalPages || 1} />
     </div>
   );
 }

@@ -22,6 +22,9 @@ export function useLogin() {
           email: user.email,
           name: user.fullName || user.email,
           role: normalizedRole,
+          phone: user.phone,
+          avatar: user.avatarUrl,
+          defaultAddress: user.defaultAddress,
         },
         accessToken
       );

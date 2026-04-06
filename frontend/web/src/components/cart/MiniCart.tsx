@@ -9,6 +9,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
   SheetTrigger,
   SheetFooter,
   SheetClose,
@@ -54,6 +55,7 @@ export function MiniCart() {
       <SheetContent className="w-full sm:max-w-md flex flex-col p-0">
         <SheetHeader className="p-6 border-b pb-4">
           <SheetTitle className="font-heading">Giỏ Hàng ({itemCount})</SheetTitle>
+          <SheetDescription className="sr-only">Danh sách các sản phẩm đang có trong giỏ hàng của bạn.</SheetDescription>
           {items.length > 0 && (
             <div className="flex items-center space-x-2 pt-2">
               <Checkbox 

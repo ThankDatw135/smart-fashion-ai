@@ -10,57 +10,11 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { formatPrice } from "@/lib/utils";
 
-type AdminVoucher = {
-  id: string;
-  code: string;
-  type: "percent" | "fixed";
-  value: number;
-  minOrderValue: number;
-  usageLimit: number;
-  usedCount: number;
-  status: "active" | "expired" | "disabled";
-  expiresAt: Date;
-};
-
-// Mock data
-const MOCK_VOUCHERS: AdminVoucher[] = [
-  {
-    id: "VOU-1",
-    code: "WELCOME2026",
-    type: "percent",
-    value: 10,
-    minOrderValue: 200000,
-    usageLimit: 1000,
-    usedCount: 450,
-    status: "active",
-    expiresAt: new Date(Date.now() + 86400000 * 30),
-  },
-  {
-    id: "VOU-2",
-    code: "FREESHIP",
-    type: "fixed",
-    value: 35000,
-    minOrderValue: 500000,
-    usageLimit: 500,
-    usedCount: 120,
-    status: "active",
-    expiresAt: new Date(Date.now() + 86400000 * 15),
-  },
-  {
-    id: "VOU-3",
-    code: "SUMMER50",
-    type: "fixed",
-    value: 50000,
-    minOrderValue: 1000000,
-    usageLimit: 100,
-    usedCount: 100,
-    status: "expired",
-    expiresAt: new Date(Date.now() - 86400000 * 5),
-  },
-];
+import { Voucher } from "@/types/voucher";
+import { useVouchers } from "@/hooks/useVouchers";
 
 export default function AdminVouchersPage() {
-  const columns = useMemo<ColumnDef<AdminVoucher>[]>(
+  const columns = useMemo<ColumnDef<Voucher>[]>(
     () => [
       {
         accessorKey: "code",
@@ -75,50 +29,56 @@ export default function AdminVouchersPage() {
         ),
       },
       {
-        accessorKey: "value",
+        accessorKey: "discountValue",
         header: "Mức giảm",
         cell: ({ row }) => (
           <span className="font-medium text-destructive">
-            {row.original.type === "percent" ? `${row.original.value}%` : formatPrice(row.original.value)}
+            {row.original.discountType === "PERCENTAGE" ? `${row.original.discountValue}%` : formatPrice(row.original.discountValue)}
           </span>
         ),
       },
       {
         accessorKey: "minOrderValue",
         header: "Đơn tối thiểu",
-        cell: ({ row }) => <span>{formatPrice(row.original.minOrderValue)}</span>,
+        cell: ({ row }) => <span>{formatPrice(row.original.minOrderValue || 0)}</span>,
       },
       {
         accessorKey: "usageLimit",
         header: "Đã dùng",
-        cell: ({ row }) => (
-          <div className="flex flex-col gap-1">
-            <span className="text-sm">
-              {row.original.usedCount} / {row.original.usageLimit}
-            </span>
-            <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-primary" 
-                style={{ width: `${(row.original.usedCount / row.original.usageLimit) * 100}%` }} 
-              />
+        cell: ({ row }) => {
+          const usedCount = 0; // Tạm thời
+          const usageLimit = row.original.usageLimit || 1;
+          const percentage = Math.min((usedCount / usageLimit) * 100, 100);
+          return (
+            <div className="flex flex-col gap-1">
+              <span className="text-sm">
+                {usedCount} / {row.original.usageLimit || "∞"}
+              </span>
+              <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary" 
+                  style={{ width: `${percentage}%` }} 
+                />
+              </div>
             </div>
-          </div>
-        ),
+          );
+        },
       },
       {
-        accessorKey: "status",
+        accessorKey: "isActive",
         header: "Trạng thái",
         cell: ({ row }) => {
           let badgeStatus: StatusType = "active";
-          if (row.original.status === "expired") badgeStatus = "error";
-          if (row.original.status === "disabled") badgeStatus = "pending";
+          if (!row.original.isActive) badgeStatus = "pending";
+          const isExpired = new Date(row.original.endDate) < new Date();
+          if (isExpired) badgeStatus = "error";
           return <StatusBadge status={badgeStatus} />;
         },
       },
       {
-        accessorKey: "expiresAt",
+        accessorKey: "endDate",
         header: "Hết hạn",
-        cell: ({ row }) => <span className="text-sm text-muted-foreground">{format(row.original.expiresAt, "dd/MM/yyyy")}</span>,
+        cell: ({ row }) => <span className="text-sm text-muted-foreground">{format(new Date(row.original.endDate), "dd/MM/yyyy")}</span>,
       },
       {
         id: "actions",
@@ -138,6 +98,9 @@ export default function AdminVouchersPage() {
     []
   );
 
+  const { data: res } = useVouchers();
+  const vouchers = res?.data || [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -152,7 +115,7 @@ export default function AdminVouchersPage() {
         </Button>
       </div>
 
-      <DataTable columns={columns} data={MOCK_VOUCHERS} />
+      <DataTable columns={columns} data={vouchers} />
     </div>
   );
 }

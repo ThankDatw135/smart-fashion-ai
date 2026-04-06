@@ -10,6 +10,14 @@ export function useProductReviews(productId: string, params?: Record<string, any
   });
 }
 
+// Lấy danh sách đánh giá cho Admin
+export function useAdminReviews(params?: Record<string, any>) {
+  return useQuery({
+    queryKey: ["admin", "reviews", params],
+    queryFn: () => ReviewsAPI.getAdminReviews(params),
+  });
+}
+
 // Tạo đánh giá mới (productId is included in FormData)
 export function useCreateReview(productId: string) {
   const queryClient = useQueryClient();

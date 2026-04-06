@@ -33,6 +33,20 @@ export const UserAPI = {
     return res.data;
   },
 
+  updateAvatar: async (file: File): Promise<ApiResponse<any>> => {
+    if (USE_MOCK) {
+      return new Promise((resolve) => setTimeout(() => resolve({
+        statusCode: 200, message: "Cập nhật avatar thành công", data: { avatar: "https://github.com/shadcn.png" }, timestamp: new Date().toISOString()
+      }), 500));
+    }
+    const formData = new FormData();
+    formData.append("avatar", file);
+    const res = await api.patch("/users/me/avatar", formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+    return res.data;
+  },
+
   getAddresses: async (): Promise<ApiResponse<UserAddress[]>> => {
     if (USE_MOCK) {
       return new Promise((resolve) => setTimeout(() => resolve({

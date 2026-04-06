@@ -33,8 +33,9 @@ export default function AdminEditCategoryPage() {
   });
 
   useEffect(() => {
-    // Mocking finding the category to edit
-    const allCategories = categoriesData?.data || [];
+    if (!categoriesData?.data) return;
+    
+    const allCategories = categoriesData.data || [];
     const _recursiveFind = (cats: any[]): any => {
       for (const c of cats) {
         if (c.id === categoryId) return c;
@@ -46,12 +47,14 @@ export default function AdminEditCategoryPage() {
       return null;
     };
     
-    // Attempt to fill form
-    reset({
-      name: "Tên Danh Mục Hướng Dẫn",
-      slug: "ten-danh-muc",
-      parentId: "", // Root category by default
-    });
+    const category = _recursiveFind(allCategories);
+    if (category) {
+      reset({
+        name: category.name || "",
+        slug: category.slug || "",
+        parentId: category.parentId || "", 
+      });
+    }
   }, [categoryId, categoriesData, reset]);
 
   const onSubmit = async (data: CategoryFormValues) => {

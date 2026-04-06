@@ -9,15 +9,15 @@ import { Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { api } from "@/services/api";
+import { useVerifyOtp } from "@/hooks/useAuth";
 
 export function VerifyOtpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
+  const { mutateAsync: verifyOtp, isPending: isLoading } = useVerifyOtp();
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -55,16 +55,13 @@ export function VerifyOtpForm() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      const res = await api.post('/auth/verify-otp', { email, otp: otpValue });
+      const res = await verifyOtp({ email, otp: otpValue });
       
       toast.success("Xác thực OTP thành công!");
-      router.push(`/reset-password?email=${encodeURIComponent(email)}&token=${res.data.data.token || "verified_token"}`);
+      router.push(`/reset-password?email=${encodeURIComponent(email)}&token=${res?.data?.resetToken || "verified_token"}`);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Mã OTP không chính xác hoặc đã hết hạn.");
-    } finally {
-      setIsLoading(false);
     }
   };
 

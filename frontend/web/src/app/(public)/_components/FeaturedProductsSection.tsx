@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, Heart } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+
+import { useWishlistStore } from "@/hooks/useWishlist";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const TABS = ["Thịnh Hành", "Đường Phố", "Tối Giản", "Công Sở", "Unisex"];
 
@@ -50,6 +55,13 @@ const FEATURED_PRODUCTS = [
 
 export function FeaturedProductsSection() {
   const [activeTab, setActiveTab] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const items = useWishlistStore((state) => state.items);
+  const toggle = useWishlistStore((state) => state.toggle);
+  const router = useRouter();
+
+  // Tránh Hydration Mismatch: chỉ đọc wishlist state sau khi client mount xong
+  useEffect(() => { setMounted(true); }, []);
 
   return (
     <section className="py-20 lg:py-24 bg-muted">
@@ -88,17 +100,21 @@ export function FeaturedProductsSection() {
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {FEATURED_PRODUCTS.map((product, i) => (
+          {FEATURED_PRODUCTS.map((product, i) => {
+            // Tránh đọc localStorage trước khi mount xong (hydration mismatch)
+            const inWishlist = mounted && items.includes(product.id);
+            return (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-card rounded-xl overflow-hidden group shadow-sm hover:shadow-xl transition-all duration-500"
+              onClick={() => router.push(`/products/${product.slug}`)}
+              className="bg-card rounded-xl overflow-hidden group shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer"
             >
               {/* Image */}
-              <Link href={`/products/${product.slug}`} className="block relative aspect-square overflow-hidden bg-muted">
+              <div className="block relative aspect-square overflow-hidden bg-muted">
                 <Image
                   src={product.image}
                   alt={product.name}
@@ -120,31 +136,51 @@ export function FeaturedProductsSection() {
                 </div>
 
                 {/* Wishlist button */}
-                <button className="absolute top-3 right-3 w-9 h-9 rounded-full glass-card flex items-center justify-center hover:text-destructive transition-colors opacity-0 group-hover:opacity-100">
-                  <Heart className="h-4 w-4" />
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggle(product.id);
+                    if (inWishlist) {
+                      toast.success("Đã xóa khỏi danh sách yêu thích");
+                    } else {
+                      toast.success(`Đã thêm "${product.name}" vào yêu thích! ❤️`);
+                    }
+                  }}
+                  className={cn(
+                    "absolute top-3 right-3 w-9 h-9 rounded-full glass-card flex items-center justify-center hover:text-destructive transition-colors opacity-0 group-hover:opacity-100",
+                    inWishlist && "opacity-100"
+                  )}
+                >
+                  <Heart className={cn("h-4 w-4", inWishlist && "fill-red-500 text-red-500")} />
                 </button>
 
                 {/* Quick view overlay */}
                 <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <button className="w-full bg-card/90 backdrop-blur-md font-bold py-3 rounded-lg shadow-lg text-sm">
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    className="w-full bg-card/90 backdrop-blur-md font-bold py-3 rounded-lg shadow-lg text-sm"
+                  >
                     Xem Nhanh
                   </button>
                 </div>
-              </Link>
+              </div>
 
               {/* Info */}
               <div className="p-4 lg:p-5 space-y-2">
-                <Link href={`/products/${product.slug}`}>
-                  <h3 className="font-bold line-clamp-2 min-h-[3rem] hover:text-primary transition-colors">
-                    {product.name}
-                  </h3>
-                </Link>
+                <h3 className="font-bold line-clamp-2 min-h-[3rem] group-hover:text-primary transition-colors">
+                  {product.name}
+                </h3>
                 <p className="text-primary font-bold text-lg">
                   {formatPrice(product.price)}
                 </p>
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

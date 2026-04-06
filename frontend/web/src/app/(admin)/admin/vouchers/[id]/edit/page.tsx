@@ -11,7 +11,8 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useUpdateVoucher } from "@/hooks/useVoucher";
+import { useUpdateVoucher, useVoucherById } from "@/hooks/useVoucher";
+import { format } from "date-fns";
 
 const voucherSchema = z.object({
   code: z.string().min(3, "Mã voucher tối thiểu 3 ký tự").toUpperCase(),
@@ -43,24 +44,31 @@ export default function AdminEditVoucherPage() {
     },
   });
 
+  const { data: voucherRes, isLoading } = useVoucherById(voucherId);
+
   useEffect(() => {
-    // In real app, we would fetch voucher details via useQuery here
-    // Mocking the loaded data
-    reset({
-      code: `VOUCHER-${voucherId}`,
-      name: "Khuyến mãi đã lưu",
-      description: "Đang tải dự liệu từ server mockup...",
-      discountType: "PERCENTAGE",
-      discountValue: 15,
-      minOrderValue: 200000,
-      maxDiscount: 50000,
-      usageLimit: 100,
-      startDate: new Date().toISOString().slice(0, 16),
-      endDate: new Date(Date.now() + 86400000 * 7).toISOString().slice(0, 16),
-      isActive: true,
-      isPublic: true,
-    });
-  }, [voucherId, reset]);
+    if (voucherRes?.data) {
+      const v = voucherRes.data;
+      reset({
+        code: v.code || "",
+        name: v.name || "",
+        description: v.description || "",
+        discountType: v.discountType || "PERCENTAGE",
+        discountValue: v.discountValue || 0,
+        minOrderValue: v.minOrderValue,
+        maxDiscount: v.maxDiscount,
+        usageLimit: v.usageLimit,
+        startDate: v.startDate ? new Date(v.startDate).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
+        endDate: v.endDate ? new Date(v.endDate).toISOString().slice(0, 16) : new Date(Date.now() + 86400000 * 7).toISOString().slice(0, 16),
+        isActive: v.isActive ?? true,
+        isPublic: v.isPublic ?? true,
+      });
+    }
+  }, [voucherRes, reset]);
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-muted-foreground animate-pulse">Đang tải dữ liệu voucher...</div>;
+  }
 
   const onSubmit = async (data: VoucherFormValues) => {
     try {

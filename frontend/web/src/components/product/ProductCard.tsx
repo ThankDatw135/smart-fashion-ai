@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Heart } from "lucide-react";
@@ -11,14 +12,20 @@ import { formatPrice, calcDiscount } from "@/lib/utils";
 import { Product } from "@/types/product";
 import { useWishlistStore } from "@/hooks/useWishlist";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { toggle, isInWishlist } = useWishlistStore();
-  const inWishlist = isInWishlist(product.id);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const items = useWishlistStore((state) => state.items);
+  const toggle = useWishlistStore((state) => state.toggle);
+  // Chỉ render đúng state khi đã mounted
+  const inWishlist = mounted ? items.includes(product.id) : false;
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
   const discount = hasDiscount ? calcDiscount(product.originalPrice!, product.price) : 0;
 
@@ -31,8 +38,8 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Ảnh sản phẩm */}
       <Link href={`/products/${product.slug}`} className="block relative aspect-[3/4] overflow-hidden">
         <Image
-          src={product.thumbnail}
-          alt={product.name}
+          src={product.thumbnail || "/images/placeholder.svg"}
+          alt={product.name || "Sản phẩm"}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -60,7 +67,16 @@ export function ProductCard({ product }: ProductCardProps) {
           "absolute top-2 right-2 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all",
           inWishlist && "opacity-100"
         )}
-        onClick={() => toggle(product.id)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          toggle(product.id);
+          if (inWishlist) {
+            toast.success("Đã xóa khỏi danh sách yêu thích");
+          } else {
+            toast.success(`Đã thêm "${product.name}" vào yêu thích! ❤️`);
+          }
+        }}
       >
         <Heart
           className={cn("h-4 w-4", inWishlist && "fill-red-500 text-red-500")}

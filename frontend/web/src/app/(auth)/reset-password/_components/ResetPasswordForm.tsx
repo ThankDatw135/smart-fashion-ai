@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { api } from "@/services/api";
+import { useResetPassword } from "@/hooks/useAuth";
 
 export function ResetPasswordForm() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { mutateAsync: resetPassword, isPending: isLoading } = useResetPassword();
   const [isSuccess, setIsSuccess] = useState(false);
 
   // Đánh giá độ mạnh mật khẩu cơ bản (tái sử dụng logic)
@@ -47,17 +47,12 @@ export function ResetPasswordForm() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      // In a real app: await api.post('/auth/reset-password', { email, token, newPassword: password });
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await resetPassword({ resetToken: token as string, newPassword: password });
       setIsSuccess(true);
       toast.success("Mật khẩu đã được đặt lại thành công!");
     } catch (error) {
       toast.error("Có lỗi xảy ra, token có thể đã hết hạn. Vui lòng thử lại.");
-    } finally {
-      setIsLoading(false);
     }
   };
 

@@ -9,63 +9,11 @@ import { ExternalLink, PackageSearch } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import Image from "next/image";
 
-type InventoryItem = {
-  id: string;
-  name: string;
-  sku: string;
-  category: string;
-  stock: number;
-  threshold: number;
-  price: number;
-  status: "in_stock" | "low_stock" | "out_of_stock";
-};
-
-// Mock data
-const MOCK_INVENTORY: InventoryItem[] = [
-  {
-    id: "PROD-001",
-    name: "Áo Thun Cổ Tròn Basic",
-    sku: "TSHIRT-001",
-    category: "Thời trang nam",
-    stock: 250,
-    threshold: 50,
-    price: 150000,
-    status: "in_stock",
-  },
-  {
-    id: "PROD-002",
-    name: "Quần Jeans Slimfit",
-    sku: "JEANS-002",
-    category: "Thời trang nam",
-    stock: 12,
-    threshold: 20,
-    price: 450000,
-    status: "low_stock",
-  },
-  {
-    id: "PROD-003",
-    name: "Váy Hoa Mùa Hè",
-    sku: "DRESS-003",
-    category: "Thời trang nữ",
-    stock: 0,
-    threshold: 15,
-    price: 350000,
-    status: "out_of_stock",
-  },
-  {
-    id: "PROD-004",
-    name: "Túi Xách Da Mini",
-    sku: "BAG-004",
-    category: "Phụ kiện",
-    stock: 85,
-    threshold: 10,
-    price: 850000,
-    status: "in_stock",
-  },
-];
+import { InventoryItemResponse } from "@/services/inventory.api";
+import { useInventory } from "@/hooks/useInventory";
 
 export default function AdminInventoryPage() {
-  const columns = useMemo<ColumnDef<InventoryItem>[]>(
+  const columns = useMemo<ColumnDef<InventoryItemResponse>[]>(
     () => [
       {
         accessorKey: "name",
@@ -135,6 +83,9 @@ export default function AdminInventoryPage() {
     []
   );
 
+  const { data: res } = useInventory();
+  const inventory = res?.data || [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -169,7 +120,7 @@ export default function AdminInventoryPage() {
         </div>
       </div>
 
-      <DataTable columns={columns} data={MOCK_INVENTORY} />
+      <DataTable columns={columns} data={inventory} pageCount={res?.meta?.totalPages || 1} />
     </div>
   );
 }

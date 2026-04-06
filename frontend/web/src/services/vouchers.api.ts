@@ -67,6 +67,17 @@ export const VouchersAPI = {
     return res.data;
   },
 
+  getVoucherById: async (id: string): Promise<ApiResponse<Voucher>> => {
+    if (USE_MOCK) {
+      const voucher = MOCK_VOUCHERS.find(v => v.id === id) || MOCK_VOUCHERS[0];
+      return new Promise((resolve) => setTimeout(() => resolve({
+        statusCode: 200, message: "Success", data: voucher, timestamp: new Date().toISOString()
+      }), 300));
+    }
+    const res = await api.get<ApiResponse<Voucher>>(`/admin/vouchers/${id}`);
+    return res.data;
+  },
+
   // PUBLIC: GET /vouchers/check/:code — Check if voucher code is valid
   checkVoucher: async (code: string): Promise<ApiResponse<Voucher>> => {
     if (USE_MOCK) {

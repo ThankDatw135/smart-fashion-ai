@@ -94,7 +94,7 @@ export class AuthService {
         passwordHash,
         fullName: dto.fullName,
         phone: dto.phone || null,
-        emailVerified: false,
+        emailVerified: true, // (Tự động bypass theo design mới)
       },
       select: {
         id: true,
@@ -105,13 +105,12 @@ export class AuthService {
       },
     });
 
-    // 4. Tạo & gửi OTP xác minh email qua BullMQ
-    await this.sendOtp(user.email, 'verify-email');
+    // 4. Bỏ qua bước tạo & gửi OTP xác minh email
+    // await this.sendOtp(user.email, 'verify-email');
 
     this.logger.log(`Đăng ký thành công: ${user.email}`);
     return {
-      message:
-        'Đăng ký thành công. Vui lòng kiểm tra email để xác minh tài khoản.',
+      message: 'Đăng ký thành công.',
       user,
     };
   }
@@ -181,7 +180,12 @@ export class AuthService {
         isActive: true,
         emailVerified: true,
         avatarUrl: true,
+        phone: true,
         vipTier: true,
+        addresses: {
+          where: { isDefault: true },
+          take: 1,
+        },
       },
     });
 
@@ -194,12 +198,7 @@ export class AuthService {
       throw new UnauthorizedException(ErrorCodes.AUTH_USER_INACTIVE);
     }
 
-    // 3. Kiểm tra email đã xác minh
-    if (!user.emailVerified) {
-      // Gửi lại OTP nếu chưa xác minh
-      await this.sendOtp(email, 'verify-email');
-      throw new UnauthorizedException(ErrorCodes.AUTH_EMAIL_NOT_VERIFIED);
-    }
+    // 3. (Đã gỡ bỏ tính năng xác minh email bắt buộc)
 
     // 4. So sánh mật khẩu
     const isPasswordValid = await bcrypt.compare(
@@ -227,7 +226,9 @@ export class AuthService {
         fullName: user.fullName,
         role: user.role,
         avatarUrl: user.avatarUrl,
+        phone: user.phone,
         vipTier: user.vipTier,
+        defaultAddress: user.addresses?.[0] || null,
       },
     };
   }
@@ -338,7 +339,6 @@ export class AuthService {
       where: { email },
       update: {
         googleId: googleUser.googleId,
-        avatarUrl: googleUser.avatarUrl || undefined,
         emailVerified: true, // Google xác minh email sẵn
         fullName: googleUser.fullName || undefined, // Update the actual name from Google
       },

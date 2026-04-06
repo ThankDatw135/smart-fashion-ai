@@ -18,41 +18,54 @@ import {
 } from "@/components/ui/select";
 import { AddressFormData } from "@/lib/validators";
 
-// Dữ liệu mock hành chính (Sau này thay bằng DB/API)
-const PROVINCES = [
-  { id: "1", name: "Hà Nội" },
-  { id: "79", name: "Hồ Chí Minh" },
-];
+import { useEffect, useState } from "react";
 
-const DISTRICTS: Record<string, { id: string; name: string }[]> = {
-  "1": [
-    { id: "1", name: "Quận Ba Đình" },
-    { id: "2", name: "Quận Hoàn Kiếm" },
-    { id: "3", name: "Quận Tây Hồ" },
-  ],
-  "79": [
-    { id: "760", name: "Quận 1" },
-    { id: "761", name: "Quận 12" },
-    { id: "764", name: "Quận Gò Vấp" },
-  ],
-};
+// Types for Location API
+interface Ward {
+  name: string;
+  code: number;
+}
 
-const WARDS: Record<string, { id: string; name: string }[]> = {
-  "1": [{ id: "1", name: "Phường Phúc Xá" }],
-  "2": [{ id: "5", name: "Phường Trúc Bạch" }],
-  "760": [{ id: "111", name: "Phường Bến Nghé" }],
-  "764": [{ id: "222", name: "Phường 5" }],
-};
+interface District {
+  name: string;
+  code: number;
+  wards: Ward[];
+}
+
+interface Province {
+  name: string;
+  code: number;
+  districts: District[];
+}
 
 export function AddressForm() {
   const form = useFormContext<AddressFormData>();
+  const [locations, setLocations] = useState<Province[]>([]);
+
+  useEffect(() => {
+    fetch("/locations.json")
+      .then((res) => res.json())
+      .then((data) => setLocations(data))
+      .catch((err) => console.error("Failed to fetch locations", err));
+  }, []);
 
   // Watch selected Province and District to cascade updates
   const selectedProvinceId = form.watch("provinceId");
   const selectedDistrictId = form.watch("districtId");
 
-  const availableDistricts = selectedProvinceId ? DISTRICTS[selectedProvinceId] || [] : [];
-  const availableWards = selectedDistrictId ? WARDS[selectedDistrictId] || [] : [];
+  const provincesList = locations.map((p) => ({ id: String(p.code), name: p.name }));
+  
+  const selectedProvince = locations.find((p) => String(p.code) === selectedProvinceId);
+  const availableDistricts = selectedProvince
+    ? selectedProvince.districts.map((d) => ({ id: String(d.code), name: d.name }))
+    : [];
+
+  const selectedDistrict = selectedProvince?.districts.find(
+    (d) => String(d.code) === selectedDistrictId
+  );
+  const availableWards = selectedDistrict
+    ? selectedDistrict.wards.map((w) => ({ id: String(w.code), name: w.name }))
+    : [];
 
   return (
     <div className="space-y-6 bg-background rounded-xl p-6 border ring-1 ring-border/50">
@@ -102,7 +115,7 @@ export function AddressForm() {
                   form.setValue("districtId", ""); // Reset quận
                   form.setValue("wardCode", ""); // Reset phường
                 }}
-                defaultValue={field.value}
+                value={field.value}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -110,7 +123,7 @@ export function AddressForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {PROVINCES.map((p) => (
+                  {provincesList.map((p) => (
                     <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                   ))}
                 </SelectContent>

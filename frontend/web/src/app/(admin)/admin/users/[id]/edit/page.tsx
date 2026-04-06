@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useUpdateUser } from "@/hooks/useUsers";
+import { useUpdateUser, useUserById } from "@/hooks/useUsers";
 
 const userSchema = z.object({
   fullName: z.string().min(2, "Tên hiển thị tối thiểu 2 ký tự"),
@@ -33,16 +33,24 @@ export default function AdminEditUserPage() {
     defaultValues: { fullName: "", phone: "", role: "USER", status: "ACTIVE", isVIP: false },
   });
 
+  const { data: userRes, isLoading } = useUserById(userId);
+  const user = userRes?.data;
+
   useEffect(() => {
-    // MOCK DATA FETCHING
-    reset({
-      fullName: "Đang tải dữ liệu...",
-      phone: "0123456789",
-      role: "USER",
-      status: "ACTIVE",
-      isVIP: false,
-    });
-  }, [userId, reset]);
+    if (user) {
+      reset({
+        fullName: user.fullName || "",
+        phone: user.phone || "",
+        role: user.role === "admin" || user.role === "super_admin" ? "ADMIN" : "USER",
+        status: user.status === "ACTIVE" ? "ACTIVE" : "BANNED",
+        isVIP: user.isVIP || false,
+      });
+    }
+  }, [user, reset]);
+
+  if (isLoading) {
+    return <div className="py-24 text-center">Đang tải dữ liệu...</div>;
+  }
 
   const onSubmit = async (data: UserFormValues) => {
     try {

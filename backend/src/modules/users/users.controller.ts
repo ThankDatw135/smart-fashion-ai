@@ -23,7 +23,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { UsersService } from './users.service.js';
-import { UpdateProfileDto, ChangePasswordDto, CreateAddressDto, UpdateAddressDto } from './dto/index.js';
+import {
+  UpdateProfileDto,
+  ChangePasswordDto,
+  CreateAddressDto,
+  UpdateAddressDto,
+} from './dto/index.js';
 
 /**
  * Users Controller — Prefix: /api/v1/users

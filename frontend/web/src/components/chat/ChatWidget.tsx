@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChatBubble } from "./ChatBubble";
 import { ChatWindow } from "./ChatWindow";
 import { Message } from "./ChatMessage";
@@ -68,9 +68,28 @@ function useMockChat() {
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const chatState = useMockChat();
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
-    <div className="fixed bottom-6 right-6 z-[60]">
+    <motion.div 
+      className="fixed bottom-6 right-6 z-[60] flex flex-col items-end"
+      drag
+      dragMomentum={false}
+      // Khung giới hạn kéo để không bị rớt khung
+      dragConstraints={{ 
+        left: -windowSize.width + 100, 
+        right: 0, 
+        top: -windowSize.height + 100, 
+        bottom: 0 
+      }}
+    >
       <AnimatePresence>
         {isOpen && (
           <ChatWindow
@@ -85,7 +104,9 @@ export function ChatWidget() {
         )}
       </AnimatePresence>
 
-      <ChatBubble isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} hasUnread={chatState.messages.length <= 1} />
-    </div>
+      <div className="mt-4 pointer-events-auto">
+        <ChatBubble isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} hasUnread={chatState.messages.length <= 1} />
+      </div>
+    </motion.div>
   );
 }

@@ -9,6 +9,14 @@ interface User {
   avatar?: string;
   vipTier?: string;
   phone?: string;
+  defaultAddress?: {
+    receiverName: string;
+    phone: string;
+    province: string;
+    district: string;
+    ward: string;
+    addressDetail: string;
+  } | null;
 }
 
 interface AuthState {

@@ -1,5 +1,12 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsPhoneNumber, IsBoolean, IsOptional, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsPhoneNumber,
+  IsBoolean,
+  IsOptional,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateAddressDto {
   @ApiProperty({ description: 'Họ tên người nhận', example: 'Nguyễn Văn A' })
@@ -28,13 +35,20 @@ export class CreateAddressDto {
   @IsString()
   ward!: string;
 
-  @ApiProperty({ description: 'Địa chỉ cụ thể (Số nhà, đường...)', example: 'Số 1, ngõ 2, đường 3' })
+  @ApiProperty({
+    description: 'Địa chỉ cụ thể (Số nhà, đường...)',
+    example: 'Số 1, ngõ 2, đường 3',
+  })
   @IsNotEmpty({ message: 'Địa chỉ cụ thể không được để trống' })
   @IsString()
   @MaxLength(255)
   addressDetail!: string;
 
-  @ApiProperty({ description: 'Đặt làm địa chỉ mặc định', required: false, default: false })
+  @ApiProperty({
+    description: 'Đặt làm địa chỉ mặc định',
+    required: false,
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   isDefault?: boolean;

@@ -9,50 +9,8 @@ import { Plus, Edit, Trash2, Newspaper } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 
-type BlogPost = {
-  id: string;
-  title: string;
-  slug: string;
-  author: string;
-  category: string;
-  status: "published" | "draft" | "archived";
-  views: number;
-  createdAt: Date;
-};
-
-// Mock data
-const MOCK_BLOG_POSTS: BlogPost[] = [
-  {
-    id: "BLOG-001",
-    title: "Xu Hướng Thời Trang Mùa Hè 2026",
-    slug: "xu-huong-thoi-trang-mua-he-2026",
-    author: "Admin C",
-    category: "Xu Hướng",
-    status: "published",
-    views: 1250,
-    createdAt: new Date(Date.now() - 86400000 * 5),
-  },
-  {
-    id: "BLOG-002",
-    title: "Bí Quyết Phối Đồ Công Sở Trẻ Trung",
-    slug: "bi-quyet-phoi-do-cong-so",
-    author: "Jane B",
-    category: "Style Guide",
-    status: "published",
-    views: 890,
-    createdAt: new Date(Date.now() - 86400000 * 10),
-  },
-  {
-    id: "BLOG-003",
-    title: "Top 5 Mẫu Áo Khoác Không Thể Thiếu Của Phái Mạnh",
-    slug: "top-5-mau-ao-khoac-phai-manh",
-    author: "Admin C",
-    category: "Góc Tin Tức",
-    status: "draft",
-    views: 0,
-    createdAt: new Date(),
-  },
-];
+import { BlogPost } from "@/types/blog";
+import { useBlogPosts } from "@/hooks/useBlog";
 
 export default function AdminBlogPage() {
   const columns = useMemo<ColumnDef<BlogPost>[]>(
@@ -77,32 +35,31 @@ export default function AdminBlogPage() {
       {
         accessorKey: "category",
         header: "Chuyên mục",
-        cell: ({ row }) => <span className="text-sm font-medium">{row.original.category}</span>,
+        cell: ({ row }) => <span className="text-sm font-medium">{row.original.category?.name || "Chưa phân loại"}</span>,
       },
       {
         accessorKey: "author",
         header: "Tác giả",
-        cell: ({ row }) => <span className="text-sm">{row.original.author}</span>,
+        cell: ({ row }) => <span className="text-sm">{row.original.author?.name || "Unknown"}</span>,
       },
       {
-        accessorKey: "views",
+        accessorKey: "viewCount",
         header: "Lượt xem",
-        cell: ({ row }) => <span className="text-sm">{row.original.views.toLocaleString()}</span>,
+        cell: ({ row }) => <span className="text-sm">{(row.original.viewCount || 0).toLocaleString()}</span>,
       },
       {
         accessorKey: "status",
         header: "Trạng thái",
         cell: ({ row }) => {
-          let badgeStatus: StatusType = "active";
-          if (row.original.status === "draft") badgeStatus = "pending";
-          if (row.original.status === "archived") badgeStatus = "error";
+          const badgeStatus: StatusType = "active";
+          // Mặc định tạm thời do schema blog chưa có status.
           return <StatusBadge status={badgeStatus} />;
         },
       },
       {
-        accessorKey: "createdAt",
+        accessorKey: "publishedAt",
         header: "Ngày đăng",
-        cell: ({ row }) => <span className="text-sm text-muted-foreground">{format(row.original.createdAt, "dd/MM/yyyy")}</span>,
+        cell: ({ row }) => <span className="text-sm text-muted-foreground">{format(new Date(row.original.publishedAt || Date.now()), "dd/MM/yyyy")}</span>,
       },
       {
         id: "actions",
@@ -122,6 +79,9 @@ export default function AdminBlogPage() {
     []
   );
 
+  const { data: res } = useBlogPosts();
+  const posts = res?.data || [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -136,7 +96,7 @@ export default function AdminBlogPage() {
         </Button>
       </div>
 
-      <DataTable columns={columns} data={MOCK_BLOG_POSTS} />
+      <DataTable columns={columns} data={posts} pageCount={res?.meta?.totalPages || 1} />
     </div>
   );
 }

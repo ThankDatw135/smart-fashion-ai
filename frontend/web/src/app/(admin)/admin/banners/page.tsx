@@ -7,51 +7,21 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, LayoutTemplate } from "lucide-react";
 
-type BannerConfig = {
-  id: string;
-  name: string;
-  position: "homepage_hero" | "category_top" | "popup";
-  status: "active" | "inactive";
-  priority: number;
-};
-
-// Mock data
-const MOCK_BANNERS: BannerConfig[] = [
-  {
-    id: "BAN-001",
-    name: "Summer Sale 2026 - Hero Banner",
-    position: "homepage_hero",
-    status: "active",
-    priority: 1,
-  },
-  {
-    id: "BAN-002",
-    name: "Banner New Arrival",
-    position: "homepage_hero",
-    status: "active",
-    priority: 2,
-  },
-  {
-    id: "BAN-003",
-    name: "Black Friday Popup",
-    position: "popup",
-    status: "inactive",
-    priority: 1,
-  },
-];
+import { Banner } from "@/types/banner";
+import { useBanners } from "@/hooks/useBanners";
 
 export default function AdminBannersPage() {
-  const columns = useMemo<ColumnDef<BannerConfig>[]>(
+  const columns = useMemo<ColumnDef<Banner>[]>(
     () => [
       {
-        accessorKey: "name",
+        accessorKey: "title",
         header: "Tên Banner/Chiến dịch",
         cell: ({ row }) => (
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400">
               <LayoutTemplate className="w-4 h-4" />
             </div>
-            <span className="font-semibold">{row.original.name}</span>
+            <span className="font-semibold">{row.original.title}</span>
           </div>
         ),
       },
@@ -69,14 +39,13 @@ export default function AdminBannersPage() {
       {
         accessorKey: "priority",
         header: "Thứ tự sắp xếp",
-        cell: ({ row }) => <span className="font-medium text-center block w-full">{row.original.priority}</span>,
+        cell: ({ row }) => <span className="font-medium text-center block w-full">{(row as any).original.priority || 1}</span>,
       },
       {
-        accessorKey: "status",
+        accessorKey: "isActive",
         header: "Trạng thái",
         cell: ({ row }) => {
-          let badgeStatus: StatusType = "active";
-          if (row.original.status === "inactive") badgeStatus = "error";
+          const badgeStatus: StatusType = row.original.isActive ? "active" : "error";
           return <StatusBadge status={badgeStatus} />;
         },
       },
@@ -98,6 +67,9 @@ export default function AdminBannersPage() {
     []
   );
 
+  const { data: res } = useBanners();
+  const banners = res?.data || [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -112,7 +84,7 @@ export default function AdminBannersPage() {
         </Button>
       </div>
 
-      <DataTable columns={columns} data={MOCK_BANNERS} />
+      <DataTable columns={columns} data={banners} />
     </div>
   );
 }

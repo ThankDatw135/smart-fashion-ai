@@ -49,6 +49,22 @@ export default function AddressesPage() {
     try {
       await UserAPI.setDefaultAddress(id);
       toast.success("Đã đặt làm địa chỉ mặc định");
+      
+      // Fix: Sync default address to authStore for checkout
+      const addr = addresses.find(a => a.id === id);
+      if (addr) {
+        useAuthStore.getState().updateUser({
+          defaultAddress: {
+            receiverName: addr.name,
+            phone: addr.phone,
+            province: addr.province,
+            district: addr.district,
+            ward: addr.ward,
+            addressDetail: addr.street
+          }
+        });
+      }
+      
       loadAddresses();
     } catch (e) {
       toast.error("Lỗi khi đặt địa chỉ mặc định");
@@ -60,6 +76,13 @@ export default function AddressesPage() {
       if (!confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) return;
       await UserAPI.deleteAddress(id);
       toast.success("Đã xóa địa chỉ");
+      
+      // Fix: Sync authStore if the deleted address was default
+      const addr = addresses.find(a => a.id === id);
+      if (addr?.isDefault) {
+         useAuthStore.getState().updateUser({ defaultAddress: null });
+      }
+      
       loadAddresses();
     } catch (e) {
       toast.error("Lỗi khi xóa địa chỉ");
@@ -116,6 +139,21 @@ export default function AddressesPage() {
         await UserAPI.addAddress(payload);
         toast.success("Thêm địa chỉ mới thành công");
       }
+      
+      // Fix: Sync default address to authStore if this address is set as default
+      if (data.isDefault) {
+        useAuthStore.getState().updateUser({
+          defaultAddress: {
+            receiverName: data.name,
+            phone: data.phone,
+            province: data.province,
+            district: data.district,
+            ward: data.ward,
+            addressDetail: data.street
+          }
+        });
+      }
+      
       setIsDialogOpen(false);
       loadAddresses();
     } catch (e) {

@@ -6,7 +6,12 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import { UpdateProfileDto, ChangePasswordDto, CreateAddressDto, UpdateAddressDto } from './dto/index.js';
+import {
+  UpdateProfileDto,
+  ChangePasswordDto,
+  CreateAddressDto,
+  UpdateAddressDto,
+} from './dto/index.js';
 import * as ErrorCodes from '../../common/constants/error-codes.js';
 
 const BCRYPT_ROUNDS = 12;
@@ -197,8 +202,10 @@ export class UsersService {
   async createAddress(userId: string, dto: CreateAddressDto) {
     // Nếu đây là địa chỉ đầu tiên hoặc được set là default, xử lý cờ isDefault
     let isDefault = dto.isDefault || false;
-    
-    const existingCount = await this.prisma.userAddress.count({ where: { userId } });
+
+    const existingCount = await this.prisma.userAddress.count({
+      where: { userId },
+    });
     if (existingCount === 0) {
       isDefault = true;
     } else if (isDefault) {
@@ -221,7 +228,11 @@ export class UsersService {
     return address;
   }
 
-  async updateAddress(addressId: string, userId: string, dto: UpdateAddressDto) {
+  async updateAddress(
+    addressId: string,
+    userId: string,
+    dto: UpdateAddressDto,
+  ) {
     // Kiểm tra tồn tại
     const existing = await this.prisma.userAddress.findUnique({
       where: { id: addressId },

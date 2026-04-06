@@ -18,6 +18,14 @@ export function useMyVouchers() {
   });
 }
 
+export function useVoucherById(id: string) {
+  return useQuery({
+    queryKey: ["vouchers", id],
+    queryFn: () => VouchersAPI.getVoucherById(id),
+    enabled: !!id,
+  });
+}
+
 export function useCollectVoucher() {
   const queryClient = useQueryClient();
   return useMutation({

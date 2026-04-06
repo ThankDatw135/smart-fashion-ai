@@ -17,6 +17,18 @@ export const ReviewsAPI = {
     return res.data;
   },
 
+  // GET /admin/reviews
+  getAdminReviews: async (params?: Record<string, any>): Promise<PaginatedResponse<Review>> => {
+    if (USE_MOCK) {
+      return new Promise((resolve) => setTimeout(() => resolve({
+        data: MOCK_REVIEWS,
+        meta: { total: MOCK_REVIEWS.length, page: 1, limit: 10, totalPages: 1, hasNextPage: false, hasPrevPage: false }
+      }), 400));
+    }
+    const res = await api.get<PaginatedResponse<Review>>('/admin/reviews', { params });
+    return res.data;
+  },
+
   // POST /reviews (H1 fix: was POST /products/:productId/reviews, backend uses POST /reviews with body containing productId)
   createReview: async (payload: FormData): Promise<ApiResponse<Review>> => {
     if (USE_MOCK) {

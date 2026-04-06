@@ -85,6 +85,18 @@ export const UsersAPI = {
     return res.data;
   },
 
+  // H6: Admin — get user by ID: GET /admin/users/:id
+  getUserById: async (id: string): Promise<ApiResponse<User>> => {
+    if (USE_MOCK) {
+      const user = MOCK_USERS.find(u => u.id === id) || MOCK_USERS[0];
+      return new Promise((resolve) => setTimeout(() => resolve({
+        statusCode: 200, message: "Success", data: user, timestamp: new Date().toISOString()
+      }), 300));
+    }
+    const res = await api.get<ApiResponse<User>>(`/admin/users/${id}`);
+    return res.data;
+  },
+
   // H6: Admin — update user: PUT /admin/users/:id
   updateUser: async (id: string, data: Partial<User>): Promise<ApiResponse<User>> => {
     if (USE_MOCK) {

@@ -8,6 +8,14 @@ export function useUsers(params?: Record<string, any>) {
   });
 }
 
+export function useUserById(id: string) {
+  return useQuery({
+    queryKey: ["user", id],
+    queryFn: () => UsersAPI.getUserById(id),
+    enabled: !!id,
+  });
+}
+
 export function useUpdateUser() {
   const queryClient = useQueryClient();
   return useMutation({

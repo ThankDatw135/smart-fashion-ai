@@ -8,49 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Star, MessageSquareQuote, CheckSquare, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
-type ReviewItem = {
-  id: string;
-  productName: string;
-  customerName: string;
-  rating: number;
-  comment: string;
-  status: "published" | "pending" | "hidden";
-  createdAt: Date;
-};
-
-// Mock data
-const MOCK_REVIEWS: ReviewItem[] = [
-  {
-    id: "REV-2001",
-    productName: "Áo Blazer Nam Phong Cách Hàn Quốc",
-    customerName: "Minh D",
-    rating: 5,
-    comment: "Sản phẩm Form lên rất chuẩn, vải đẹp, xứng đáng với giá tiền.",
-    status: "published",
-    createdAt: new Date(),
-  },
-  {
-    id: "REV-2002",
-    productName: "Áo Thun Cổ Tròn Basic",
-    customerName: "Hoàng K",
-    rating: 2,
-    comment: "Giao hàng hơi chậm, áo rút sau lần giặt đầu.",
-    status: "pending",
-    createdAt: new Date(Date.now() - 86400000),
-  },
-  {
-    id: "REV-2003",
-    productName: "Đầm Dự Tiệc Sang Trọng",
-    customerName: "Ngọc M",
-    rating: 1,
-    comment: "Spam quảng cáo website lạ link rác abc.xyz lừa đảo.",
-    status: "hidden",
-    createdAt: new Date(Date.now() - 86400000 * 2),
-  },
-];
+import { Review } from "@/types/review";
+import { useAdminReviews } from "@/hooks/useReviews";
 
 export default function AdminReviewsPage() {
-  const columns = useMemo<ColumnDef<ReviewItem>[]>(
+  const columns = useMemo<ColumnDef<Review>[]>(
     () => [
       {
         accessorKey: "rating",
@@ -63,35 +25,35 @@ export default function AdminReviewsPage() {
         ),
       },
       {
-        accessorKey: "comment",
+        accessorKey: "content",
         header: "Nội dung",
         cell: ({ row }) => (
           <div className="max-w-[300px]">
-             <span className="text-sm line-clamp-2" title={row.original.comment}>&quot;{row.original.comment}&quot;</span>
+             <span className="text-sm line-clamp-2" title={row.original.content}>&quot;{row.original.content}&quot;</span>
           </div>
         ),
       },
       {
-        accessorKey: "productName",
-        header: "Sản phẩm",
+        accessorKey: "productId",
+        header: "Sản phẩm (ID)",
         cell: ({ row }) => (
           <span className="text-sm font-medium text-primary hover:underline cursor-pointer truncate max-w-[200px] block">
-            {row.original.productName}
+            {row.original.productId}
           </span>
         ),
       },
       {
-        accessorKey: "customerName",
-        header: "Tên hiển thị",
-        cell: ({ row }) => <span className="text-xs">{row.original.customerName}</span>,
+        accessorKey: "userId",
+        header: "Người dùng (ID)",
+        cell: ({ row }) => <span className="text-xs">{row.original.userId}</span>,
       },
       {
         accessorKey: "status",
         header: "Trạng thái",
         cell: ({ row }) => {
           let badgeStatus: StatusType = "active";
-          if (row.original.status === "pending") badgeStatus = "pending";
-          if (row.original.status === "hidden") badgeStatus = "error";
+          if (row.original.status === "PENDING") badgeStatus = "pending";
+          if (row.original.status === "HIDDEN") badgeStatus = "error";
           
           return (
             <StatusBadge 
@@ -103,14 +65,14 @@ export default function AdminReviewsPage() {
       {
         accessorKey: "createdAt",
         header: "Ngày gửi",
-        cell: ({ row }) => <span className="text-xs text-muted-foreground">{format(row.original.createdAt, "dd/MM/yyyy HH:mm")}</span>,
+        cell: ({ row }) => <span className="text-xs text-muted-foreground">{format(new Date(row.original.createdAt), "dd/MM/yyyy HH:mm")}</span>,
       },
       {
         id: "actions",
         header: "",
         cell: ({ row }) => (
           <div className="flex items-center justify-end gap-2">
-            <Button variant="ghost" size="icon" title="Duyệt đưa lên web" disabled={row.original.status === "published"}>
+            <Button variant="ghost" size="icon" title="Duyệt đưa lên web" disabled={row.original.status === "APPROVED"}>
               <CheckSquare className="w-4 h-4 text-emerald-500" />
             </Button>
             <Button variant="ghost" size="icon" title="Ẩn/Xóa">
@@ -122,6 +84,9 @@ export default function AdminReviewsPage() {
     ],
     []
   );
+
+  const { data: res } = useAdminReviews();
+  const reviews = res?.data || [];
 
   return (
     <div className="space-y-6">
@@ -139,7 +104,7 @@ export default function AdminReviewsPage() {
         </div>
       </div>
 
-      <DataTable columns={columns} data={MOCK_REVIEWS} />
+      <DataTable columns={columns} data={reviews} pageCount={res?.meta?.totalPages || 1} />
     </div>
   );
 }

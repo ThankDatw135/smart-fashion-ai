@@ -8,10 +8,11 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { MOCK_PRODUCTS } from "@/mocks/products.mock";
+import { useProducts } from "@/hooks/useProducts";
+import { Product } from "@/types/product";
 import Image from "next/image";
 
-type AdminProduct = typeof MOCK_PRODUCTS[0];
+type AdminProduct = Product;
 
 export default function AdminProductsPage() {
   const columns = useMemo<ColumnDef<AdminProduct>[]>(
@@ -84,6 +85,9 @@ export default function AdminProductsPage() {
     []
   );
 
+  const { data: res } = useProducts();
+  const products = res?.data || [];
+
   return (
     <div className="space-y-6" suppressHydrationWarning>
       <div className="flex items-center justify-between" suppressHydrationWarning>
@@ -100,7 +104,7 @@ export default function AdminProductsPage() {
         </Button>
       </div>
 
-      <DataTable columns={columns} data={MOCK_PRODUCTS} pageCount={Math.ceil(MOCK_PRODUCTS.length / 10)} />
+      <DataTable columns={columns} data={products} pageCount={res?.meta?.totalPages || 1} />
     </div>
   );
 }

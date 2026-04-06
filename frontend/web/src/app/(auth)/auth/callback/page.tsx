@@ -32,6 +32,7 @@ export default function AuthCallbackPage() {
           name: user.fullName || user.name || user.email,
           role: normalizedRole,
           avatar: user.avatarUrl,
+          phone: user.phone,
         }, token);
         
         // Cập nhật cookies cho middleware

@@ -1,5 +1,7 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe, VersioningType, Logger } from '@nestjs/common';
+import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
@@ -12,7 +14,7 @@ import { AppModule } from './app.module.js';
  */
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
 
   // --- Lấy config ---
@@ -28,6 +30,11 @@ async function bootstrap() {
 
   // --- Cookie Parser (cho refresh token HTTP-Only cookie) ---
   app.use(cookieParser());
+
+  // --- Static Files ---
+  app.useStaticAssets(join(process.cwd(), '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   // --- CORS — chỉ cho phép frontend origin ---
   app.enableCors({

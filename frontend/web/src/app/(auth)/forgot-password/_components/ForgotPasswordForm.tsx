@@ -10,13 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { api } from "@/services/api";
+import { useForgotPassword } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 export function ForgotPasswordForm() {
   const router = useRouter();
+  const { mutateAsync: forgotPassword, isPending: isLoading } = useForgotPassword();
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,18 +26,12 @@ export function ForgotPasswordForm() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      // In a real app: await api.post('/auth/forgot-password', { email });
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await forgotPassword({ email });
       setIsSuccess(true);
       toast.success("Mã xác minh đã được gửi đến email của bạn.");
     } catch (error) {
       toast.error("Có lỗi xảy ra. Hãy chắc chắn email này đã được đăng ký.");
-    } finally {
-      setIsLoading(false);
     }
   };
 

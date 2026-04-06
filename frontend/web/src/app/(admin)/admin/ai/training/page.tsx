@@ -8,42 +8,8 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, CheckCircle2, CloudUpload } from "lucide-react";
 import { format } from "date-fns";
 
-type TrainingJob = {
-  id: string;
-  type: "vector_sync" | "intent_update";
-  trigger: "manual" | "auto" | "webhook";
-  status: "success" | "processing" | "failed";
-  recordsProcessed: number;
-  createdAt: Date;
-};
-
-// Mock data
-const MOCK_JOBS: TrainingJob[] = [
-  {
-    id: "JOB-4522",
-    type: "vector_sync",
-    trigger: "webhook",
-    status: "success",
-    recordsProcessed: 125,
-    createdAt: new Date(Date.now() - 1000 * 60 * 30),
-  },
-  {
-    id: "JOB-4521",
-    type: "intent_update",
-    trigger: "manual",
-    status: "processing",
-    recordsProcessed: 45,
-    createdAt: new Date(),
-  },
-  {
-    id: "JOB-4520",
-    type: "vector_sync",
-    trigger: "auto",
-    status: "failed",
-    recordsProcessed: 0,
-    createdAt: new Date(Date.now() - 86400000),
-  },
-];
+import { TrainingJob } from "@/services/ai.api";
+import { useAITrainingJobs } from "@/hooks/useAITraining";
 
 export default function AdminAITrainingPage() {
   const columns = useMemo<ColumnDef<TrainingJob>[]>(
@@ -89,11 +55,20 @@ export default function AdminAITrainingPage() {
       {
         accessorKey: "createdAt",
         header: "Thời gian bắt đầu",
-        cell: ({ row }) => <span className="text-xs text-muted-foreground">{format(row.original.createdAt, "dd/MM/yyyy HH:mm:ss")}</span>,
+        cell: ({ row }) => {
+          try {
+            return <span className="text-xs text-muted-foreground">{format(new Date(row.original.createdAt), "dd/MM/yyyy HH:mm:ss")}</span>;
+          } catch (e) {
+            return <span className="text-xs text-muted-foreground">{row.original.createdAt}</span>;
+          }
+        },
       },
     ],
     []
   );
+
+  const { data: res } = useAITrainingJobs();
+  const jobs = res?.data || [];
 
   return (
     <div className="space-y-6">
@@ -121,7 +96,7 @@ export default function AdminAITrainingPage() {
          </div>
       </div>
 
-      <DataTable columns={columns} data={MOCK_JOBS} />
+      <DataTable columns={columns} data={jobs} pageCount={res?.meta?.totalPages || 1} />
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import {
-  IsUUID,
   IsString,
   IsOptional,
   IsArray,
@@ -24,7 +23,7 @@ export class InitCheckoutDto {
     type: [String],
   })
   @IsArray()
-  @IsUUID('4', { each: true })
+  @IsString({ each: true })
   cartItemIds!: string[];
 
   @ApiPropertyOptional({ description: 'Guest ID (nếu chưa login)' })
