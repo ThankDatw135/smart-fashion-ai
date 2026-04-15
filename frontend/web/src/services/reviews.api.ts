@@ -52,5 +52,39 @@ export const ReviewsAPI = {
     }
     const res = await api.delete<ApiResponse<any>>(`/reviews/${id}`);
     return res.data;
+  },
+
+  // ADMIN: PATCH /admin/reviews/:id/approve
+  approveReview: async (id: string): Promise<ApiResponse<any>> => {
+    if (USE_MOCK) {
+      return new Promise((resolve) => setTimeout(() => resolve({
+        statusCode: 200, message: "Approved", data: { id, status: "APPROVED" }, timestamp: new Date().toISOString()
+      }), 400));
+    }
+    const res = await api.patch<ApiResponse<any>>(`/admin/reviews/${id}/approve`);
+    return res.data;
+  },
+
+  // ADMIN: PATCH /admin/reviews/:id/hide
+  hideReview: async (id: string): Promise<ApiResponse<any>> => {
+    if (USE_MOCK) {
+      return new Promise((resolve) => setTimeout(() => resolve({
+        statusCode: 200, message: "Hidden", data: { id, status: "HIDDEN" }, timestamp: new Date().toISOString()
+      }), 400));
+    }
+    const res = await api.patch<ApiResponse<any>>(`/admin/reviews/${id}/hide`);
+    return res.data;
+  },
+
+  // ADMIN: DELETE /admin/reviews/:id (force delete)
+  adminDeleteReview: async (id: string): Promise<ApiResponse<any>> => {
+    if (USE_MOCK) {
+      return new Promise((resolve) => setTimeout(() => resolve({
+        statusCode: 200, message: "Deleted", data: {}, timestamp: new Date().toISOString()
+      }), 400));
+    }
+    const res = await api.delete<ApiResponse<any>>(`/admin/reviews/${id}`);
+    return res.data;
   }
 };
+

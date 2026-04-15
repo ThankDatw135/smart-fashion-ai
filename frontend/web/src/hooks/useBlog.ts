@@ -37,3 +37,23 @@ export function useUpdateBlogPost() {
     },
   });
 }
+
+// Lấy chi tiết bài viết theo ID (dành cho Admin edit)
+export function useBlogPostById(id: string) {
+  return useQuery({
+    queryKey: ["blog", "detail", id],
+    queryFn: () => BlogAPI.getPostById(id),
+    enabled: !!id,
+  });
+}
+
+// Xóa bài viết (Admin)
+export function useDeleteBlogPost() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => BlogAPI.deletePost(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blog"] });
+    },
+  });
+}

@@ -12,7 +12,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useUpdateBlogPost } from "@/hooks/useBlog";
+import { useUpdateBlogPost, useBlogPostById } from "@/hooks/useBlog";
 
 const blogSchema = z.object({
   title: z.string().min(5, "Tiêu đề tối thiểu 5 ký tự"),
@@ -38,19 +38,23 @@ export default function AdminEditBlogPage() {
     defaultValues: { title: "", summary: "", content: "", categoryId: "", tags: "", status: "published" },
   });
 
+  const { data: postData, isLoading } = useBlogPostById(blogId);
+  const post = postData?.data;
+
   useEffect(() => {
-    // In real app, we would fetch post details via useQuery using blogId
-    reset({
-      title: "Xu hướng thời trang Mùa Hè 2026",
-      summary: "Khám phá những mẫu thiết kế mới nhất cho mùa hè nóng bỏng.",
-      content: "<p>Bài viết đang tải từ server...</p>",
-      categoryId: "fashion",
-      tags: "Mùa Hè, Trending",
-      status: "published",
-      publishedAt: new Date().toISOString().slice(0, 16),
-    });
-    setThumbnail("https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=600");
-  }, [blogId, reset]);
+    if (post) {
+      reset({
+        title: post.title,
+        summary: post.summary,
+        content: post.content,
+        categoryId: post.category?.id || post.category?.slug || "",
+        tags: post.tags?.join(", ") || "",
+        status: post.status || "published",
+        publishedAt: post.publishedAt ? new Date(post.publishedAt).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16),
+      });
+      setThumbnail(post.thumbnail || null);
+    }
+  }, [post, reset]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -79,10 +83,15 @@ export default function AdminEditBlogPage() {
         </Button>
         <div>
           <h1 className="text-3xl font-heading font-bold tracking-tight">Sửa Bài Viết</h1>
-          <p className="text-muted-foreground mt-1">Cập nhật nội dung bài viết <strong>{blogId}</strong></p>
+          <p className="text-muted-foreground mt-1">Cập nhật nội dung bài viết <strong>{post?.title || blogId}</strong></p>
         </div>
       </div>
 
+      {isLoading ? (
+        <div className="flex items-center justify-center p-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="p-6 rounded-3xl border bg-card text-card-foreground shadow-sm space-y-4">
@@ -170,6 +179,7 @@ export default function AdminEditBlogPage() {
           </div>
         </div>
       </div>
+      )}
     </form>
   );
 }

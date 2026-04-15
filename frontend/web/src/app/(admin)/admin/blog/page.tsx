@@ -9,10 +9,37 @@ import { Plus, Edit, Trash2, Newspaper } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 
+import { useState } from "react";
 import { BlogPost } from "@/types/blog";
-import { useBlogPosts } from "@/hooks/useBlog";
+import { useBlogPosts, useDeleteBlogPost } from "@/hooks/useBlog";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminBlogPage() {
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const { mutateAsync: deletePost, isPending: isDeleting } = useDeleteBlogPost();
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deletePost(deleteId);
+      toast.success("Đã xóa bài viết thành công");
+    } catch (err) {
+      toast.error("Có lỗi xảy ra khi xóa bài viết");
+    } finally {
+      setDeleteId(null);
+    }
+  };
+
   const columns = useMemo<ColumnDef<BlogPost>[]>(
     () => [
       {
@@ -66,10 +93,12 @@ export default function AdminBlogPage() {
         header: "",
         cell: ({ row }) => (
           <div className="flex items-center justify-end gap-2">
-            <Button variant="ghost" size="icon">
-              <Edit className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
+            <Button variant="ghost" size="icon" asChild>
+              <Link href={`/admin/blog/${row.original.id}/edit`}>
+                <Edit className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
+              </Link>
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" onClick={() => setDeleteId(row.original.id)}>
               <Trash2 className="w-4 h-4 text-destructive opacity-75 hover:opacity-100 transition-opacity" />
             </Button>
           </div>
@@ -97,6 +126,23 @@ export default function AdminBlogPage() {
       </div>
 
       <DataTable columns={columns} data={posts} pageCount={res?.meta?.totalPages || 1} />
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa bài viết?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Hành động này không thể hoàn tác. Bài viết sẽ bị xóa vĩnh viễn khỏi hệ thống.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isDeleting}>
+              {isDeleting ? "Đang xóa..." : "Xóa bài viết"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -91,8 +91,12 @@ export function AIRecommendationsSection() {
             viewport={{ once: true }}
             transition={{ delay: i * 0.1 }}
             className="min-w-[300px] sm:min-w-[360px] lg:min-w-[400px] snap-start flex-shrink-0"
+            suppressHydrationWarning
           >
-            <div className="relative rounded-2xl overflow-hidden aspect-[3/4] shadow-lg group cursor-pointer">
+            <div 
+              className="relative rounded-2xl overflow-hidden aspect-[3/4] shadow-lg group cursor-pointer"
+              suppressHydrationWarning
+            >
               <Image
                 src={set.image}
                 alt={set.title}
@@ -101,9 +105,9 @@ export function AIRecommendationsSection() {
                 sizes="400px"
               />
               {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" suppressHydrationWarning />
               {/* Text */}
-              <div className="absolute bottom-5 left-5 right-5 lg:bottom-6 lg:left-6 lg:right-6">
+              <div className="absolute bottom-5 left-5 right-5 lg:bottom-6 lg:left-6 lg:right-6" suppressHydrationWarning>
                 <p className="text-white/80 text-sm font-medium mb-1">{set.style}</p>
                 <h4 className="text-white text-xl lg:text-2xl font-bold">{set.title}</h4>
               </div>

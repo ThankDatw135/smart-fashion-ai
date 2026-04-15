@@ -48,5 +48,27 @@ export const BlogAPI = {
     // H1 fix: admin endpoint uses /admin/blog and PATCH method
     const res = await api.patch<ApiResponse<BlogPost>>(`/admin/blog/${id}`, data);
     return res.data;
+  },
+
+  getPostById: async (id: string): Promise<ApiResponse<BlogPost>> => {
+    if (USE_MOCK) {
+      const post = MOCK_BLOGS.find(b => b.id === id);
+      if (!post) throw new Error("Blog post not found");
+      return new Promise((resolve) => setTimeout(() => resolve({
+        statusCode: 200, message: "Success", data: post, timestamp: new Date().toISOString()
+      }), 400));
+    }
+    const res = await api.get<ApiResponse<BlogPost>>(`/admin/blog/${id}`);
+    return res.data;
+  },
+
+  deletePost: async (id: string): Promise<ApiResponse<any>> => {
+    if (USE_MOCK) {
+      return new Promise((resolve) => setTimeout(() => resolve({
+        statusCode: 200, message: "Blog post deleted", data: null, timestamp: new Date().toISOString()
+      }), 600));
+    }
+    const res = await api.delete<ApiResponse<any>>(`/admin/blog/${id}`);
+    return res.data;
   }
 };

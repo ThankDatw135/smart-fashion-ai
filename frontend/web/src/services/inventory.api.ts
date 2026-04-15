@@ -64,5 +64,17 @@ export const InventoryAPI = {
     }
     const res = await api.get<PaginatedResponse<InventoryItemResponse>>("/admin/inventory", { params });
     return res.data;
+  },
+
+  // ADMIN: PATCH /admin/inventory/:id — Cập nhật tồn kho
+  updateStock: async (id: string, stock: number): Promise<{ data: InventoryItemResponse }> => {
+    if (USE_MOCK) {
+      return new Promise((resolve) => setTimeout(() => resolve({
+        data: { id, name: "", sku: "", category: "", stock, threshold: 0, price: 0, status: stock > 0 ? "in_stock" : "out_of_stock" }
+      }), 400));
+    }
+    const res = await api.patch<{ data: InventoryItemResponse }>(`/admin/inventory/${id}`, { stock });
+    return res.data;
   }
 };
+

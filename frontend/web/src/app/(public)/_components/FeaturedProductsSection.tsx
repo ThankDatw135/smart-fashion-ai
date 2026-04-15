@@ -9,48 +9,21 @@ import { formatPrice } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 import { useWishlistStore } from "@/hooks/useWishlist";
+import { useProducts } from "@/hooks/useProducts";
+import { Product } from "@/types/product";
+import { Loader2, PackageX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const TABS = ["Thịnh Hành", "Đường Phố", "Tối Giản", "Công Sở", "Unisex"];
 
-// Mock sản phẩm nổi bật (đồng bộ với thiết kế Stitch)
-const FEATURED_PRODUCTS = [
-  {
-    id: "fp1",
-    name: "Áo Khoác Blazer Form Rộng Chất Liệu Len Cao Cấp",
-    slug: "ao-khoac-blazer-form-rong",
-    price: 1250000,
-    image: "/images/products/blazer.jpg",
-    badges: [
-      { label: "Lựa Chọn Của AI", color: "bg-primary" },
-      { label: "Hot", color: "bg-destructive" },
-    ],
-  },
-  {
-    id: "fp2",
-    name: "Áo Thun Cotton Organic Premium - Minimalist Style",
-    slug: "ao-thun-cotton-organic-premium",
-    price: 450000,
-    image: "/images/products/tshirt.jpg",
-    badges: [{ label: "Mới", color: "bg-primary" }],
-  },
-  {
-    id: "fp3",
-    name: "Quần Jeans Denim Phom Suông Phong Cách Cổ Điển",
-    slug: "quan-jeans-denim-phom-suong",
-    price: 890000,
-    image: "/images/products/jeans.jpg",
-    badges: [{ label: "Lựa Chọn Của AI", color: "bg-primary" }],
-  },
-  {
-    id: "fp4",
-    name: "Giày Sneaker Da Bê Trắng Đế Cao Su Tự Nhiên",
-    slug: "giay-sneaker-da-be-trang",
-    price: 1500000,
-    image: "/images/products/sneaker.jpg",
-    badges: [{ label: "Bán Chạy", color: "bg-destructive" }],
-  },
+// Các ID danh mục mẫu
+const CATEGORY_MAP = [
+  { label: "Thịnh Hành", id: "" },
+  { label: "Đường Phố", id: "5a9d6-category-streetwear" },
+  { label: "Tối Giản", id: "5a9d6-category-minimalist" },
+  { label: "Công Sở", id: "5a9d6-category-office" },
+  { label: "Unisex", id: "5a9d6-category-unisex" },
 ];
 
 export function FeaturedProductsSection() {
@@ -59,6 +32,16 @@ export function FeaturedProductsSection() {
   const items = useWishlistStore((state) => state.items);
   const toggle = useWishlistStore((state) => state.toggle);
   const router = useRouter();
+
+  // Fetch API products
+  const selectedCategoryUrlId = CATEGORY_MAP[activeTab].id;
+  const { data: res, isLoading, error } = useProducts({
+    limit: 8,
+    sort: "best_seller", // Sort bằng best_seller theo đúng schema backend
+    ...(selectedCategoryUrlId && { category: selectedCategoryUrlId }), // Backend dùng filter `category` thay vì `categoryId`
+  });
+
+  const products = res?.data || [];
 
   // Tránh Hydration Mismatch: chỉ đọc wishlist state sau khi client mount xong
   useEffect(() => { setMounted(true); }, []);
@@ -98,9 +81,30 @@ export function FeaturedProductsSection() {
           </Link>
         </div>
 
-        {/* Product Grid */}
+        {/* Loading state */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="animate-pulse">
+                <div className="aspect-square bg-muted rounded-xl mb-4" />
+                <div className="h-4 bg-muted w-3/4 rounded mb-2" />
+                <div className="h-4 bg-muted w-1/2 rounded" />
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <PackageX className="h-10 w-10 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">Không thể lấy danh sách sản phẩm.</p>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <PackageX className="h-10 w-10 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">Danh mục này hiện đang trống.</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {FEATURED_PRODUCTS.map((product, i) => {
+          {products.map((product: Product, i: number) => {
             // Tránh đọc localStorage trước khi mount xong (hydration mismatch)
             const inWishlist = mounted && items.includes(product.id);
             return (
@@ -116,23 +120,26 @@ export function FeaturedProductsSection() {
               {/* Image */}
               <div className="block relative aspect-square overflow-hidden bg-muted">
                 <Image
-                  src={product.image}
+                  src={product.thumbnail}
                   alt={product.name}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-700"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  unoptimized
                 />
 
                 {/* Badges */}
-                <div className="absolute top-3 left-3 flex flex-col gap-2">
-                  {product.badges.map((badge) => (
-                    <span
-                      key={badge.label}
-                      className={`${badge.color} text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest`}
-                    >
-                      {badge.label}
+                <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+                  {product.isNew && (
+                    <span className="bg-primary text-white text-[10px] px-3 py-1 rounded-full uppercase font-bold tracking-widest shadow-lg">
+                      Mới
                     </span>
-                  ))}
+                  )}
+                  {product.isFlashSale && (
+                    <span className="bg-destructive text-white text-[10px] px-3 py-1 rounded-full uppercase font-bold tracking-widest shadow-lg">
+                      Hot
+                    </span>
+                  )}
                 </div>
 
                 {/* Wishlist button */}
@@ -182,6 +189,7 @@ export function FeaturedProductsSection() {
             );
           })}
         </div>
+        )}
       </div>
     </section>
   );

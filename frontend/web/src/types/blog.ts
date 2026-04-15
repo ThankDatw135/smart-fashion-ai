@@ -22,4 +22,5 @@ export interface BlogPost {
   tags: string[];
   viewCount: number;
   publishedAt: string;
+  status?: string;
 }

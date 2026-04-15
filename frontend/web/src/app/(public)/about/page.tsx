@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Image from "next/image";
 import { TrendingUp, Users, Leaf, ShieldCheck } from "lucide-react";
+import { getStaticContent } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Về chúng tôi | Antigravity Store",
@@ -8,6 +9,8 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
+  const content = getStaticContent().about || {};
+
   const values = [
     { icon: TrendingUp, title: "Sáng Tạo Vượt Bậc", desc: "Không ngừng đổi mới trong thiết kế và nâng cấp công nghệ mua sắm AI." },
     { icon: Leaf, title: "Phát Triển Bền Vững", desc: "Sử dụng vật liệu xanh, giảm thiểu rác thải thời trang qua quy trình may mặc chuẩn." },
@@ -20,11 +23,10 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="relative py-24 md:py-32 overflow-hidden bg-primary/5">
         <div className="container relative z-10 max-w-4xl text-center">
-          <h1 className="text-4xl md:text-6xl font-heading font-bold mb-6 tracking-tight">
-            Định Nghĩa Lại Thời Trang Bằng <br/><span className="text-primary">Trí Tuệ Nhân Tạo</span>
+          <h1 className="text-4xl md:text-6xl font-heading font-bold mb-6 tracking-tight" dangerouslySetInnerHTML={{ __html: content.heading }}>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-            Antigravity không chỉ bán quần áo, chúng tôi ứng dụng AI để giúp bạn tìm thấy phong cách phản chiếu đúng nhất con người bạn. Bất chấp quy luật của tuổi tác, thời gian và lực hấp dẫn - hãy để phong cách của bạn bay cao.
+            {content.description}
           </p>
         </div>
         {/* Background Decorative */}
@@ -38,13 +40,12 @@ export default function AboutPage() {
             <Image src="/images/hero-fashion.jpg" alt="Antigravity Team" fill className="object-cover" />
           </div>
           <div className="order-1 lg:order-2 space-y-6">
-            <h2 className="text-3xl md:text-4xl font-heading font-bold">Hành trình của chúng tôi</h2>
-            <p className="text-muted-foreground text-lg leading-relaxed">
-              Bắt đầu từ một dự án khởi nghiệp nhỏ năm 2026, Antigravity ra đời với nhận thức rằng việc mua sắm quần áo online quá rủi ro về chất liệu và kích thước. 
-            </p>
-            <p className="text-muted-foreground text-lg leading-relaxed">
-              Chúng tôi đã đưa <b>AI Stylist</b> vào hệ thống cốt lõi. Bất kỳ ai cũng có một Stylist riêng tư vấn cách phối, tư vấn size phù hợp tỉ lệ cơ thể. Đó là lúc phép màu diễn ra.
-            </p>
+            <h2 className="text-3xl md:text-4xl font-heading font-bold">{content.storyHeading}</h2>
+            {content.storyLines?.map((line: string, i: number) => (
+              <p key={i} className="text-muted-foreground text-lg leading-relaxed">
+                {line}
+              </p>
+            ))}
           </div>
         </div>
       </section>

@@ -9,6 +9,8 @@ import {
   BarChart3, Bot, Settings, ChevronLeft, ChevronRight, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth.store";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SITE_NAME } from "@/lib/constants";
@@ -40,7 +42,14 @@ const MENU_ITEMS = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const { logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    router.replace("/login");
+  };
 
   return (
     <aside
@@ -98,6 +107,7 @@ export function AdminSidebar() {
       {/* Footer */}
       <div className="border-t p-2" suppressHydrationWarning>
         <Button
+          onClick={handleLogout}
           variant="ghost"
           className={cn(
             "w-full text-destructive hover:text-destructive",

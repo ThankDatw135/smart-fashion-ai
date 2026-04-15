@@ -4,6 +4,31 @@ import { VouchersAPI } from "@/services/vouchers.api";
 export function useVouchers(params?: Record<string, any>) {
   return useQuery({
     queryKey: ["vouchers", params],
-    queryFn: () => VouchersAPI.getPublicVouchers(params), // Mocks get public vouchers normally but we will use it for admin for now or we need an admin API. Admin usually fetches all vouchers. Based on VouchersAPI, we only have getPublicVouchers. Wait, "getPublicVouchers" calls /vouchers. Let's just use it to get the list.
+    queryFn: () => VouchersAPI.getPublicVouchers(params),
   });
 }
+
+export function useCreateVoucher() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) => VouchersAPI.createVoucher(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vouchers"] }),
+  });
+}
+
+export function useUpdateVoucher() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => VouchersAPI.updateVoucher(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vouchers"] }),
+  });
+}
+
+export function useDeleteVoucher() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => VouchersAPI.deleteVoucher(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vouchers"] }),
+  });
+}
+
